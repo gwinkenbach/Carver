@@ -1,0 +1,13 @@
+{
+  "launch": {
+
+    "configurations": [],
+    "compounds": []
+  },
+  "files.exclude": {
+    ".vscode":true,
+    "bin/": true,
+    "deploy/": true,
+    "darwin/": true
+  }
+}
