@@ -1,4 +1,4 @@
-package carving
+package hmap
 
 import (
 	"image"
@@ -45,14 +45,14 @@ func NewPixelDepthSampler(
 	return sampler
 }
 
-func (p *pixelDepthSampler) getNumSamplesFromP0ToP1(p0, p1 geom.Pt2) int {
+func (p *pixelDepthSampler) GetNumSamplesFromP0ToP1(p0, p1 geom.Pt2) int {
 	q0 := p0.Xform(&p.matToPixelXform)
 	q1 := p1.Xform(&p.matToPixelXform)
 	l := q1.Sub(q0)
 	return int(l.Len())
 }
 
-func (p *pixelDepthSampler) at(q *geom.Pt2) float64 {
+func (p *pixelDepthSampler) At(q *geom.Pt2) float64 {
 	q1 := q.Xform(&p.matToPixelXform)
 
 	y := int(math.Max(0, q1.Y))

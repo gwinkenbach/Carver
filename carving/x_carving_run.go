@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"alvin.com/GoCarver/geom"
+	"alvin.com/GoCarver/hmap"
 )
 
 type xCarvingRun struct {
@@ -11,7 +12,7 @@ type xCarvingRun struct {
 }
 
 func (r *xCarvingRun) configure(
-	sampler CarvingDepthSampler, // The sampler to get the image value at each point.
+	sampler hmap.CarvingDepthSampler, // The sampler to get the image value at each point.
 	generator codeGenerator, // The output code generator.
 	carvingWidth float64, // The width along x of the carving area.
 	xAtLeft float64, // The x-coordinate at the left side of each run.
@@ -29,7 +30,7 @@ func (r *xCarvingRun) configure(
 	// one at each end of the run.
 	p0 := geom.NewPt2(xAtLeft, runY)
 	p1 := geom.NewPt2(xAtLeft+carvingWidth, runY)
-	numSamples := sampler.getNumSamplesFromP0ToP1(p0, p1)
+	numSamples := sampler.GetNumSamplesFromP0ToP1(p0, p1)
 	if numSamples <= 1 {
 		numSamples = 2
 	}

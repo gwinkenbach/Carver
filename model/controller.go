@@ -9,6 +9,7 @@ import (
 
 	carv "alvin.com/GoCarver/carving"
 	"alvin.com/GoCarver/geom"
+	"alvin.com/GoCarver/hmap"
 	"alvin.com/GoCarver/qtui"
 	"alvin.com/GoCarver/util"
 
@@ -384,7 +385,7 @@ func (c *Controller) getGrblOutputFile(dir string) *os.File {
 func (c *Controller) getCarvingSampler(
 	matDim geom.Size2,
 	carvDim geom.Size2,
-	carvOrigin geom.Pt2) carv.CarvingDepthSampler {
+	carvOrigin geom.Pt2) hmap.CarvingDepthSampler {
 
 	heightMap := c.model.GetHeightMap()
 	imgMode := c.model.GetChoice(qtui.ItemCarvingMode)
@@ -395,7 +396,7 @@ func (c *Controller) getCarvingSampler(
 		float32(carvOrigin.X), float32(carvOrigin.Y),
 		heightMap.Width(), heightMap.Height(), imgMode)
 	imgGray := util.QtImageToGray16Image(heightMap)
-	sampler := carv.NewPixelDepthSampler(xform.GetMc2NicXform(), carvOrigin, carvDim, imgGray)
+	sampler := hmap.NewPixelDepthSampler(xform.GetMc2NicXform(), carvOrigin, carvDim, imgGray)
 
 	return sampler
 }

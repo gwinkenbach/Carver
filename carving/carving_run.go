@@ -7,6 +7,7 @@ import (
 
 	"alvin.com/GoCarver/geom"
 	g "alvin.com/GoCarver/geom"
+	"alvin.com/GoCarver/hmap"
 )
 
 type oneRun interface {
@@ -32,7 +33,7 @@ type carvingRun struct {
 
 	needMorePasses bool // Whether more passes are need to finish this run.
 
-	sampler   CarvingDepthSampler
+	sampler   hmap.CarvingDepthSampler
 	generator codeGenerator
 }
 
@@ -120,7 +121,7 @@ func (r *carvingRun) doOnePass(delta float64) {
 }
 
 func (r *carvingRun) getCarvingDepthAt(q *geom.Pt2) (depth float64, clipped bool) {
-	s := r.sampler.at(q)
+	s := r.sampler.At(q)
 	d := (1-s)*r.blackCarvingDepth + s*r.whiteCarvingDepth
 
 	if d < maxDepth {

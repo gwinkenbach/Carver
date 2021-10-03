@@ -5,6 +5,7 @@ import (
 	"math"
 
 	g "alvin.com/GoCarver/geom"
+	"alvin.com/GoCarver/hmap"
 )
 
 const (
@@ -35,7 +36,7 @@ type Carver struct {
 	horizFeedRate    float64
 	vertFeedRate     float64
 
-	sampler CarvingDepthSampler
+	sampler hmap.CarvingDepthSampler
 	output  io.Writer
 }
 
@@ -67,7 +68,7 @@ func (c *Carver) ConfigureTool(
 }
 
 func (c *Carver) ConfigureCarvingProfile(
-	sampler CarvingDepthSampler,
+	sampler hmap.CarvingDepthSampler,
 	topHeightMm float64,
 	bottomHeightMm float64,
 	stepOverFraction float64,

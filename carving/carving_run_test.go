@@ -2,11 +2,13 @@ package carving
 
 import (
 	"testing"
+
+	"alvin.com/GoCarver/hmap"
 )
 
 func TestRunXForward(t *testing.T) {
 	r := xCarvingRun{}
-	sampler := newConstantDepthSampler(0)
+	sampler := hmap.NewConstantDepthSampler(0)
 	gen := unitTestGenerator{}
 
 	r.configure(&sampler, &gen, 100, 10, 0, 0, -0.1, 0.2)
@@ -45,7 +47,7 @@ func TestRunXForward(t *testing.T) {
 
 func TestRunXBackward(t *testing.T) {
 	r := xCarvingRun{}
-	sampler := newConstantDepthSampler(0)
+	sampler := hmap.NewConstantDepthSampler(0)
 	gen := unitTestGenerator{}
 
 	r.configure(&sampler, &gen, 100, 10, 0, 0, -0.1, 0.2)
@@ -84,7 +86,7 @@ func TestRunXBackward(t *testing.T) {
 
 func TestRunXMultipass(t *testing.T) {
 	r := xCarvingRun{}
-	sampler := newConstantDepthSampler(0)
+	sampler := hmap.NewConstantDepthSampler(0)
 	gen := unitTestGenerator{}
 
 	r.configure(&sampler, &gen, 100, 10, 0, 0, -0.4, 0.25)
@@ -125,7 +127,7 @@ func TestRunXMultipass(t *testing.T) {
 
 func TestRunYForward(t *testing.T) {
 	r := yCarvingRun{}
-	sampler := newConstantDepthSampler(0)
+	sampler := hmap.NewConstantDepthSampler(0)
 	gen := unitTestGenerator{}
 
 	r.configure(&sampler, &gen, 100, 10, 0, 0, -0.1, 0.2)
