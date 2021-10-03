@@ -207,7 +207,6 @@ func (c *Controller) doSaveModelAs() bool {
 	modelFile := widgets.QFileDialog_GetSaveFileName(c.mainWindow,
 		"Save model as", dir, "Carving model (*.carv)", "", 0)
 	if modelFile != "" {
-		fmt.Printf("Do save to: %s\n", modelFile)
 		return c.doSaveModelToFile(modelFile)
 	}
 

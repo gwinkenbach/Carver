@@ -1,7 +1,6 @@
 package qtui
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 )
@@ -43,31 +42,24 @@ func NewFloat32Validator(reg string, min, max float32) *Float32Validator {
 }
 
 func (f *Float32Validator) Validate(s string) int {
-	fmt.Printf("Validate: %s - ", s)
-
 	match := f.regex.FindStringSubmatch(s)
 	if match == nil || len(match) < 2 {
-		fmt.Printf("invalid\n")
 		return ValidationInvalid
 	}
 
 	val64, err := strconv.ParseFloat(match[1], 32)
 	if err != nil {
-		fmt.Printf("interm\n")
 		return ValidationIntermediate
 	}
 
 	f.val = float32(val64)
 	if f.val < f.min {
-		fmt.Printf("interm, too small\n")
 		return ValidationIntermediate
 	}
 	if f.val > f.max {
-		fmt.Printf("interm, to big\n")
 		return ValidationInvalid
 	}
 
-	fmt.Printf("validated\n")
 	return ValidationAcceptable
 }
 

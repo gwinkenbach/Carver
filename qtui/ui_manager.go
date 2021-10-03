@@ -1,7 +1,6 @@
 package qtui
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/therecipe/qt/widgets"
@@ -309,7 +308,6 @@ func feedRateConfig() (f formatter, v validator) {
 
 // Implement interface liveDataObserver.
 func (um *UIManager) notifyDataChanged(tag string) {
-	fmt.Printf("UM chanmged: %s\n", tag)
 	if um.onItemChanged != nil {
 		um.onItemChanged(um, tag)
 	}

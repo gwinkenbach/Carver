@@ -1,7 +1,6 @@
 package qtui
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -79,7 +78,6 @@ func (ld *liveData) getValue() interface{} {
 func (ld *liveData) onDataChanged(val interface{}) {
 	show := false
 	if ld.label == ItemBlackCarvingDepth {
-		fmt.Printf("On data changed: %s\n", ld.label)
 		show = true
 	}
 
@@ -94,7 +92,6 @@ func (ld *liveData) onDataChanged(val interface{}) {
 		ld.ds.OnValidationResult(result)
 		if result != ValidationAcceptable {
 			if show {
-				fmt.Printf("*** Validation failed\n")
 			}
 			return
 		}
@@ -102,7 +99,6 @@ func (ld *liveData) onDataChanged(val interface{}) {
 		ld.value = ld.vl.GetValidatedValue()
 		if ld.o != nil {
 			if show {
-				fmt.Printf("*** Notify\n")
 			}
 			ld.o.notifyDataChanged(ld.label)
 		}

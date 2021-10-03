@@ -1,7 +1,6 @@
 package carving
 
 import (
-	"fmt"
 	"log"
 	"math"
 
@@ -64,8 +63,8 @@ func (r *carvingRun) doOnePass(delta float64) {
 	r.needMorePasses = false
 	r.currrentCarvingDepth = r.currrentCarvingDepth - r.depthStepDown
 
-	fmt.Printf("*** Run y=%f, carving depth = %f, delta = %2.0f\n", r.startingPoint.Y, r.currrentCarvingDepth, delta)
-	fmt.Printf("        black=%5.2f, white=%5.2f\n", r.blackCarvingDepth, r.whiteCarvingDepth)
+	// fmt.Printf("*** Run y=%f, carving depth = %f, delta = %2.0f\n", r.startingPoint.Y, r.currrentCarvingDepth, delta)
+	// fmt.Printf("        black=%5.2f, white=%5.2f\n", r.blackCarvingDepth, r.whiteCarvingDepth)
 
 	var origin geom.Pt2
 	for s := 0; s < r.numSteps; s++ {
@@ -88,7 +87,7 @@ func (r *carvingRun) doOnePass(delta float64) {
 			}
 
 			r.generator.startPath(pt.X, pt.Y, depth)
-			fmt.Printf("  Start: %4.1f, %4.1f, %4.1f\n", pt.X, pt.Y, depth)
+			// fmt.Printf("  Start: %4.1f, %4.1f, %4.1f\n", pt.X, pt.Y, depth)
 		} else if s == r.numSteps-1 {
 			// Last step: end point depends on direction.
 			pt := r.startingPoint
@@ -105,7 +104,7 @@ func (r *carvingRun) doOnePass(delta float64) {
 			r.generator.moveTo(pt.X, pt.Y, depth)
 			r.generator.endPath(discardPath)
 
-			fmt.Printf("  End: %4.1f, %4.1f, depth = %4.1f, discard = %v, more = %v\n", pt.X, pt.Y, depth, discardPath, r.needMorePasses)
+			// fmt.Printf("  End: %4.1f, %4.1f, depth = %4.1f, discard = %v, more = %v\n", pt.X, pt.Y, depth, discardPath, r.needMorePasses)
 		} else {
 			stepVec := r.step.Scale(float64(s) * delta)
 			pt := origin.Add(stepVec)
@@ -126,7 +125,6 @@ func (r *carvingRun) getCarvingDepthAt(q *geom.Pt2) (depth float64, clipped bool
 
 	if d < maxDepth {
 		maxDepth = d
-		fmt.Printf("** max depth: %4.2f, sample = %3.1f, B=%4.2f, W%4.2f\n", d, s, r.blackCarvingDepth, r.whiteCarvingDepth)
 	}
 
 	depth = d
