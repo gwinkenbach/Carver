@@ -10,7 +10,7 @@ GOFORMAT = $(GOCMD) fmt
 
 REMOTE_PACKS= \
 	github.com/therecipe/qt/cmd/... \
-	gotest.tools/assert
+	gotest.tools/v3
 
 SRCS=main.go
 BIN=./bin/Carve
