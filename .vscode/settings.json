@@ -9,5 +9,16 @@
     "bin/": true,
     "deploy/": true,
     "darwin/": true
-  }
+  },
+  "cSpell.ignoreWords": [
+    "feed",
+    "generator",
+    "grbl",
+    "hmap",
+    "horiz",
+    "horiz feed rate",
+    "new",
+    "new grbl generator",
+    "rate"
+  ]
 }
