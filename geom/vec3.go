@@ -37,6 +37,11 @@ func (v *Vec3) Dot(w Vec3) float64 {
 	return v.X*w.X + v.Y*w.Y + v.Z*w.Z
 }
 
+// Cross returns the cross product v x w
+func (v *Vec3) Cross(w Vec3) Vec3 {
+	return NewVec3(v.Y*w.Z-v.Z*w.Y, v.Z*w.X-v.X*w.Z, v.X*w.Y-v.Y*w.Z)
+}
+
 // Norm normalizes v in place. Fatal error if v has zero length.
 // Returns v.
 func (v *Vec3) Norm() Vec3 {
