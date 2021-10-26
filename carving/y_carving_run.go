@@ -12,7 +12,7 @@ type yCarvingRun struct {
 }
 
 func (r *yCarvingRun) configure(
-	sampler hmap.CarvingDepthSampler, // The sampler to get the image value at each point.
+	sampler hmap.ScalarGridSampler, // The sampler to get the image value at each point.
 	generator codeGenerator, // The output code generator.
 	carvingHeight float64, // The height along y of the carving area.
 	yAtBottom float64, // The y-coordinate at the bottom side of each run.

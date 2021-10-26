@@ -27,7 +27,7 @@ func NewPixelDepthSampler(
 	mcToNicXform *geom.Matrix33,
 	carvingAreaOrigin geom.Pt2,
 	carvingAreaDim geom.Size2,
-	img *image.Gray16) CarvingDepthSampler {
+	img *image.Gray16) ScalarGridSampler {
 
 	sampler := &pixelDepthSampler{
 		carvingAreaOrigin: carvingAreaOrigin,

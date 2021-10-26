@@ -27,8 +27,8 @@ type Carver struct {
 
 	carveMode int
 
-	zWhite      float64 // Z coord. for white samples.
-	zBlack      float64 // Z coord. for black samples.
+	zWhite      float64 // Z coordinate for white samples.
+	zBlack      float64 // Z coordinate for black samples.
 	maxStepDown float64
 
 	toolDiameterMm   float64
@@ -36,7 +36,7 @@ type Carver struct {
 	horizFeedRate    float64
 	vertFeedRate     float64
 
-	sampler hmap.CarvingDepthSampler
+	sampler hmap.ScalarGridSampler
 	output  io.Writer
 }
 
@@ -68,7 +68,7 @@ func (c *Carver) ConfigureTool(
 }
 
 func (c *Carver) ConfigureCarvingProfile(
-	sampler hmap.CarvingDepthSampler,
+	sampler hmap.ScalarGridSampler,
 	topHeightMm float64,
 	bottomHeightMm float64,
 	stepOverFraction float64,

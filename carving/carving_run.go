@@ -32,7 +32,7 @@ type carvingRun struct {
 
 	needMorePasses bool // Whether more passes are need to finish this run.
 
-	sampler   hmap.CarvingDepthSampler
+	sampler   hmap.ScalarGridSampler
 	generator codeGenerator
 }
 

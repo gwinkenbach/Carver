@@ -384,7 +384,7 @@ func (c *Controller) getGrblOutputFile(dir string) *os.File {
 func (c *Controller) getCarvingSampler(
 	matDim geom.Size2,
 	carvDim geom.Size2,
-	carvOrigin geom.Pt2) hmap.CarvingDepthSampler {
+	carvOrigin geom.Pt2) hmap.ScalarGridSampler {
 
 	heightMap := c.model.GetHeightMap()
 	imgMode := c.model.GetChoice(qtui.ItemCarvingMode)
