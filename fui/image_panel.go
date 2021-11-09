@@ -7,9 +7,13 @@ import (
 	"math"
 	"sync"
 
+	"alvin.com/GoCarver/util"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+
+	"github.com/disintegration/imaging"
 )
 
 const (
@@ -36,9 +40,11 @@ type ImagePanel struct {
 	panelSize float32
 
 	materialFrame *canvas.Rectangle
+	imgCanvasPos  fyne.Position
+	imgCanvasSize fyne.Size
 
-	uiImage     *canvas.Image
 	originalImg image.Image
+	uiImage     *canvas.Image
 
 	imgMirrorX  bool
 	imgMirrorY  bool
@@ -122,6 +128,17 @@ func (ip *ImagePanel) SetImageOptions(mode string, mirrorX, mirrorY bool) {
 	fmt.Printf("Image options: %s, mirrorX = %v, mirrorY = %v\n", mode, mirrorX, mirrorY)
 }
 
+func (ip *ImagePanel) SetImage(img image.Image) {
+	if img != nil {
+		// Ensure the channel is empty.
+		for ip.getNewImage() != nil {
+		}
+
+		gray := util.ImageToGrayImage(img)
+		ip.newImageQueue <- gray
+	}
+}
+
 func (ip *ImagePanel) getRootContainer() *fyne.Container {
 	return ip.root
 }
@@ -157,32 +174,103 @@ func (ip *ImagePanel) internalRefresh(
 	if matW > matH {
 		ref = matW
 	}
-	h = round((carvH / ref) * canvasSize)
-	w = round((carvW / ref) * canvasSize)
-	posX := round((offsetX / ref) * canvasSize)
-	posY := round((offsetY / ref) * canvasSize)
+	ip.imgCanvasSize = fyne.NewSize(round((carvW/ref)*canvasSize), round((carvH/ref)*canvasSize))
+	ip.imgCanvasPos = fyne.NewPos(round((offsetX/ref)*canvasSize), round((offsetY/ref)*canvasSize))
 
-	// Temporary image:
-	g := canvas.NewLinearGradient(color.Black, color.White, 45)
-	ip.uiImage.Image = g.Generate(int(w), int(h))
-	ip.uiImage.SetMinSize(fyne.NewSize(w, h))
-	ip.uiImage.Resize(fyne.NewSize(w, h))
-	ip.uiImage.Move(fyne.NewPos(posX, posY))
+	fmt.Printf("Canvas size: %v\n", ip.imgCanvasSize)
+	fmt.Printf("Canvas Pos: %v\n", ip.imgCanvasPos)
+
+	//ip.uiImage.SetMinSize(ip.imgCanvasSize)
+	ip.uiImage.Resize(ip.imgCanvasSize)
+	ip.uiImage.Move(ip.imgCanvasPos)
+	ip.uiImage.ScaleMode = canvas.ImageScalePixels
+	ip.uiImage.FillMode = canvas.ImageFillContain
+
+	// -----
+	img := ip.getNewImage()
+	if img != nil {
+		ip.originalImg = img
+	}
+	ip.prepareImageForDisplay()
 	ip.uiImage.Refresh()
 
-	// If a new image is available, update the pixmap in the carving frame.
-	// var img = ip.getUpdatedUIImage()
-	// if img != nil {
-	// 	if imgMirrorX || imgMirrorY {
-	// 		img = img.Mirrored2(imgMirrorX, imgMirrorY)
-	// 	}
-	// 	pixmap := gui.QPixmap_FromImage(img, core.Qt__AutoColor)
-	// 	if pixmap != nil {
-	// 		ip.setCarvingPixmap(pixmap)
-	// 	}
-	// } else {
-	// 	ip.carvingFrame.SetPixmap(nil)
-	// }
+	ip.root.Refresh()
+}
 
-	//ip.root.Refresh()
+// Return the image to update the UI with, or nil if none is available. Non-blocking.
+func (ip *ImagePanel) getNewImage() image.Image {
+	select {
+	case img := <-ip.newImageQueue:
+		return img
+	default:
+		return nil
+	}
+}
+
+func (ip *ImagePanel) prepareImageForDisplay() {
+	if ip.originalImg == nil {
+		return
+	}
+
+	fmt.Printf("Prepare img for %s\n", ip.imgFillMode)
+
+	switch ip.imgFillMode {
+	case ImgModeFill:
+		ip.setupImageForFitOrFillMode()
+	case ImgModeFit:
+		ip.setupImageForFitOrFillMode()
+	case ImgModeCrop:
+		ip.setupImageForCropMode()
+	default:
+		fyne.LogError("Unknown image fill mode: "+ip.imgFillMode, nil)
+	}
+}
+
+func (ip *ImagePanel) setupImageForFitOrFillMode() {
+	targetWidth := int(ip.imgCanvasSize.Width)
+	targetHeight := int(ip.imgCanvasSize.Height)
+
+	var img image.Image
+	if ip.imgFillMode == ImgModeFit {
+		img = imaging.Fit(ip.originalImg, targetWidth, targetHeight, imaging.Linear)
+	} else {
+		img = imaging.Resize(ip.originalImg, targetWidth, targetHeight, imaging.Linear)
+
+	}
+	if ip.imgMirrorX {
+		img = imaging.FlipH(img)
+	}
+	if ip.imgMirrorY {
+		img = imaging.FlipV(img)
+	}
+
+	ip.uiImage.Image = img
+	ip.uiImage.Move(ip.imgCanvasPos)
+	ip.uiImage.Resize(ip.imgCanvasSize)
+}
+
+func (ip *ImagePanel) setupImageForCropMode() {
+	targetWidth := ip.imgCanvasSize.Width
+	targetHeight := ip.imgCanvasSize.Height
+
+	var img image.Image
+	scaleX := targetWidth / float32(ip.originalImg.Bounds().Dx())
+	scaleY := targetHeight / float32(ip.originalImg.Bounds().Dy())
+	if scaleX > scaleY {
+		img = imaging.Resize(ip.originalImg, int(targetWidth), 0, imaging.Linear)
+	} else {
+		img = imaging.Resize(ip.originalImg, 0, int(targetHeight), imaging.Linear)
+	}
+
+	img = imaging.CropCenter(img, int(targetWidth), int(targetHeight))
+	if ip.imgMirrorX {
+		img = imaging.FlipH(img)
+	}
+	if ip.imgMirrorY {
+		img = imaging.FlipV(img)
+	}
+
+	ip.uiImage.Image = img
+	ip.uiImage.Move(ip.imgCanvasPos)
+	ip.uiImage.Resize(ip.imgCanvasSize)
 }
