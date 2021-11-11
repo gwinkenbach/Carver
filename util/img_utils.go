@@ -26,6 +26,40 @@ func ImageToGrayImage(img image.Image) *image.Gray {
 	return grayImg
 }
 
+// LoadGray8Image loads a Gray16 image from a file, converting the pixel format as necessary.
+func LoadGray8Image(imgPath string) *image.Gray {
+	if imgPath != "" {
+		dir, _ := os.Getwd()
+		fullPath := path.Join(dir, imgPath)
+
+		reader, err := os.Open(fullPath)
+		if err != nil {
+			return nil
+		}
+		defer reader.Close()
+
+		img, _, err := image.Decode(reader)
+		if err != nil {
+			return nil
+		}
+
+		if img == nil {
+			return nil
+		}
+
+		grayImg := image.NewGray(img.Bounds())
+		for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
+			for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
+				grayImg.Set(x, y, img.At(x, y))
+			}
+		}
+
+		return grayImg
+	}
+
+	return nil
+}
+
 // LoadGray16Image loads a Gray16 image from a file, converting the pixel format as necessary.
 func LoadGray16Image(imgPath string) *image.Gray16 {
 	if imgPath != "" {

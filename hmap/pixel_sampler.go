@@ -9,11 +9,11 @@ import (
 )
 
 const (
-	uint16Weight = 1.0 / math.MaxUint16
+	uint16Weight = 1.0 / math.MaxUint8
 )
 
 type pixelDepthSampler struct {
-	img       *image.Gray16
+	img       *image.Gray
 	imgWidth  int
 	imgHeight int
 
@@ -27,7 +27,7 @@ func NewPixelDepthSampler(
 	mcToNicXform *geom.Matrix33,
 	carvingAreaOrigin geom.Pt2,
 	carvingAreaDim geom.Size2,
-	img *image.Gray16) ScalarGridSampler {
+	img *image.Gray) ScalarGridSampler {
 
 	sampler := &pixelDepthSampler{
 		carvingAreaOrigin: carvingAreaOrigin,
@@ -66,6 +66,6 @@ func (p *pixelDepthSampler) At(q *geom.Pt2) float64 {
 	}
 
 	pixVal := p.img.At(x, y)
-	grayVal := pixVal.(color.Gray16)
+	grayVal := pixVal.(color.Gray)
 	return float64(grayVal.Y) * uint16Weight
 }

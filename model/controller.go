@@ -10,6 +10,7 @@ import (
 	"alvin.com/GoCarver/fui"
 	"alvin.com/GoCarver/geom"
 	"alvin.com/GoCarver/hmap"
+	"alvin.com/GoCarver/util"
 
 	"fyne.io/fyne/v2"
 )
@@ -346,19 +347,18 @@ func (c *Controller) getCarvingSampler(
 	carvDim geom.Size2,
 	carvOrigin geom.Pt2) hmap.ScalarGridSampler {
 
-	// heightMap := c.model.GetHeightMap()
-	// imgMode := c.model.GetChoice(qtui.ItemCarvingMode)
+	heightMap := c.model.GetHeightMap()
+	imgMode := c.model.GetChoice(CarvDirectionTag)
 
-	// xform := geom.NewXformCache(
-	// 	float32(matDim.W), float32(matDim.H),
-	// 	float32(carvDim.W), float32(carvDim.H),
-	// 	float32(carvOrigin.X), float32(carvOrigin.Y),
-	// 	heightMap.Width(), heightMap.Height(), imgMode)
-	// imgGray := util.QtImageToGray16Image(heightMap)
-	// sampler := hmap.NewPixelDepthSampler(xform.GetMc2NicXform(), carvOrigin, carvDim, imgGray)
+	xform := geom.NewXformCache(
+		float32(matDim.W), float32(matDim.H),
+		float32(carvDim.W), float32(carvDim.H),
+		float32(carvOrigin.X), float32(carvOrigin.Y),
+		heightMap.Bounds().Dx(), heightMap.Bounds().Dy(), imgMode)
+	imgGray := util.ImageToGrayImage(heightMap)
+	sampler := hmap.NewPixelDepthSampler(xform.GetMc2NicXform(), carvOrigin, carvDim, imgGray)
 
-	// return sampler
-	return nil
+	return sampler
 }
 
 func carverToolTypeFromModelToolType(modelToolType int) int {
