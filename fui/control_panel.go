@@ -30,7 +30,7 @@ type ControlPanel struct {
 	root *container.AppTabs
 
 	groups  map[string]*container.TabItem
-	uiItems map[string]uiItemValueBinding
+	uiItems map[string]*uiItemValueBinding
 
 	enableChangeNotifications bool
 	changeListener            func(uiItemTag string)
@@ -40,7 +40,7 @@ func NewControlPanel() *ControlPanel {
 	cp := &ControlPanel{}
 	cp.root = container.NewAppTabs()
 	cp.groups = make(map[string]*container.TabItem)
-	cp.uiItems = make(map[string]uiItemValueBinding)
+	cp.uiItems = make(map[string]*uiItemValueBinding)
 
 	return cp
 }
@@ -76,6 +76,20 @@ func (cp *ControlPanel) SetChoiceByIndex(tag string, index int) {
 		w := item.widget.(*widget.Select)
 		if w != nil {
 			w.SetSelectedIndex(index)
+		}
+	}
+}
+
+func (cp *ControlPanel) SetCheckboxState(tag string, checked bool) {
+	v := cp.disableChangeNotification()
+	defer cp.setChangeNotification(v)
+
+	item, ok := cp.uiItems[tag]
+	if ok {
+		item.boolVal.Set(checked)
+		w := item.widget.(*widget.Check)
+		if w != nil {
+			w.SetChecked(checked)
 		}
 	}
 }
@@ -153,7 +167,7 @@ func (cp *ControlPanel) AddNumberEntry(
 		fyne.LogError("Duplicate UI item tag: "+itemTag, nil)
 		return
 	}
-	item = uiItemValueBinding{
+	item = &uiItemValueBinding{
 		floatVal: binding.NewFloat(),
 	}
 	cp.uiItems[itemTag] = item
@@ -191,7 +205,7 @@ func (cp *ControlPanel) AddSelector(
 		fyne.LogError("Duplicate UI item tag: "+itemTag, nil)
 		return
 	}
-	item = uiItemValueBinding{
+	item = &uiItemValueBinding{
 		intVal: binding.NewInt(),
 	}
 	item.intVal.AddListener(newTaggedChangeListener(itemTag, cp))
@@ -229,15 +243,15 @@ func (cp *ControlPanel) AddCheckbox(
 		fyne.LogError("Duplicate UI item tag: "+itemTag, nil)
 		return
 	}
-	item = uiItemValueBinding{
+	item = &uiItemValueBinding{
 		boolVal: binding.NewBool(),
 	}
-	cp.uiItems[itemTag] = item
 	item.boolVal.AddListener(newTaggedChangeListener(itemTag, cp))
 
 	// Create the UI elements and insert in the grid.
 	w := widget.NewCheckWithData("", item.boolVal)
 	item.widget = w
+	cp.uiItems[itemTag] = item
 
 	panel := tabItem.Content.(*fyne.Container)
 	if panel != nil {

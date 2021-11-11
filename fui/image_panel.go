@@ -1,7 +1,6 @@
 package fui
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"math"
@@ -124,8 +123,6 @@ func (ip *ImagePanel) SetImageOptions(mode string, mirrorX, mirrorY bool) {
 	ip.imgFillMode = mode
 	ip.imgMirrorX = mirrorX
 	ip.imgMirrorY = mirrorY
-
-	fmt.Printf("Image options: %s, mirrorX = %v, mirrorY = %v\n", mode, mirrorX, mirrorY)
 }
 
 func (ip *ImagePanel) SetImage(img image.Image) {
@@ -177,9 +174,6 @@ func (ip *ImagePanel) internalRefresh(
 	ip.imgCanvasSize = fyne.NewSize(round((carvW/ref)*canvasSize), round((carvH/ref)*canvasSize))
 	ip.imgCanvasPos = fyne.NewPos(round((offsetX/ref)*canvasSize), round((offsetY/ref)*canvasSize))
 
-	fmt.Printf("Canvas size: %v\n", ip.imgCanvasSize)
-	fmt.Printf("Canvas Pos: %v\n", ip.imgCanvasPos)
-
 	//ip.uiImage.SetMinSize(ip.imgCanvasSize)
 	ip.uiImage.Resize(ip.imgCanvasSize)
 	ip.uiImage.Move(ip.imgCanvasPos)
@@ -211,8 +205,6 @@ func (ip *ImagePanel) prepareImageForDisplay() {
 	if ip.originalImg == nil {
 		return
 	}
-
-	fmt.Printf("Prepare img for %s\n", ip.imgFillMode)
 
 	switch ip.imgFillMode {
 	case ImgModeFill:
