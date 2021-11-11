@@ -1,0 +1,6 @@
+[Details]
+  Icon = "app_icon.png"
+  Name = "GoCarver"
+  ID = "com.alvin.gocarver"
+  Version = "0.0.1"
+  Build = 250

@@ -1,11 +1,10 @@
 package model
 
 import (
+	"image"
 	"log"
 
 	"alvin.com/GoCarver/geom"
-	"alvin.com/GoCarver/qtui"
-	"github.com/therecipe/qt/gui"
 )
 
 type material struct {
@@ -31,7 +30,7 @@ type carving struct {
 }
 
 type heightMap struct {
-	Image         *gui.QImage `json:"_"` // Ignored in JSON
+	Image         image.Image `json:"-"` // Ignored in JSON
 	ImageFileName string      `json:"imageFileName"`
 	ImageMode     int         `json:"imageMode"`
 	MirrorY       bool        `json:"mirrorY"`
@@ -97,33 +96,33 @@ func (m *Model) SetDirty(dirty bool) {
 
 func (m *Model) GetFloat32(tag string) float32 {
 	switch tag {
-	case qtui.ItemMaterialWidth:
+	case MatWidthTag:
 		return m.root.Material.MaterialWidth
-	case qtui.ItemMaterialHeight:
+	case MatHeightTag:
 		return m.root.Material.MaterialHeight
-	case qtui.ItemMaterialThickness:
+	case MatThicknessTag:
 		return m.root.Material.MaterialThickness
-	case qtui.ItemCarvingAreaWidth:
+	case CarvWidthTag:
 		return m.root.Material.CarvingAreaWidth
-	case qtui.ItemCarvingAreaHeight:
+	case CarvHeightTag:
 		return m.root.Material.CarvingAreaHeight
-	case qtui.ItemCarvingAreaOffsetX:
+	case CarvOffsetXTag:
 		return m.root.Material.CarvingAreaOffsetX
-	case qtui.ItemCarvingAreaOffsetY:
+	case CarvOffsetYTag:
 		return m.root.Material.CarvingAreaOffsetY
-	case qtui.ItemBlackCarvingDepth:
+	case CarvBlackDepthTag:
 		return m.root.Material.BlackCarvingDepth
-	case qtui.ItemWhiteCarvingDepth:
+	case CarvWhiteDepthTag:
 		return m.root.Material.WhiteCarvingDepth
-	case qtui.ItemToolDiameter:
+	case ToolDiamTag:
 		return m.root.Carving.ToolDiameter
-	case qtui.ItemToolStepOver:
+	case StepOverTag:
 		return m.root.Carving.StepOverPercent
-	case qtui.ItemMaxStepDownSize:
+	case MaxStepDownTag:
 		return m.root.Carving.MaxStepDownSize
-	case qtui.ItemHorizontalFeedRate:
+	case HorizFeedRateTag:
 		return m.root.Carving.HorizontalFeedRate
-	case qtui.ItemVerticalFeedRate:
+	case VertFeedRateTag:
 		return m.root.Carving.VerticalFeedRate
 	}
 
@@ -133,11 +132,11 @@ func (m *Model) GetFloat32(tag string) float32 {
 
 func (m *Model) GetChoice(tag string) int {
 	switch tag {
-	case qtui.ItemCarvingMode:
+	case CarvDirectionTag:
 		return m.root.Carving.CarvingMode
-	case qtui.ItemImageMode:
+	case ImgFillModeTag:
 		return m.root.HeightMap.ImageMode
-	case qtui.ItemToolType:
+	case ToolTypeTag:
 		return m.root.Carving.ToolType
 	}
 
@@ -147,9 +146,9 @@ func (m *Model) GetChoice(tag string) int {
 
 func (m *Model) GetBool(tag string) bool {
 	switch tag {
-	case qtui.ItemMirrorImageX:
+	case ImgMirrorXTag:
 		return m.root.HeightMap.MirrorX
-	case qtui.ItemMirrorImageY:
+	case ImgMirrorYTag:
 		return m.root.HeightMap.MirrorY
 	}
 
@@ -157,6 +156,6 @@ func (m *Model) GetBool(tag string) bool {
 	return false
 }
 
-func (m *Model) GetHeightMap() *gui.QImage {
+func (m *Model) GetHeightMap() image.Image {
 	return m.root.HeightMap.Image
 }

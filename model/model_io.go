@@ -5,13 +5,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/png"
 	"io"
 	"io/ioutil"
 	"strings"
-
-	"github.com/therecipe/qt/gui"
-
-	"github.com/therecipe/qt/core"
 )
 
 const (
@@ -71,14 +69,9 @@ func (mio *modelIO) readJSON(rc io.ReadCloser, numBytes uint64) error {
 }
 
 func (mio *modelIO) readImage(rc io.ReadCloser, numBytes uint64) error {
-	buf := new(bytes.Buffer)
-	_, err := io.Copy(buf, rc)
-	if err != nil {
-		return err
-	}
-	img := gui.QImage_FromData(buf.Bytes(), buf.Len(), "")
-	if img == nil {
-		return fmt.Errorf("Faild to read image from file")
+	img, _, err := image.Decode(rc)
+	if img == nil || err != nil {
+		return fmt.Errorf("Failed to read image from file")
 	}
 
 	mio.model.root.HeightMap.Image = img
@@ -127,18 +120,16 @@ func (mio *modelIO) writeImage(w *zip.Writer) error {
 			return err
 		}
 
-		buffer := core.NewQBuffer(nil)
-		if !img.Save2(buffer, "PNG", -1) {
+		buffer := new(bytes.Buffer)
+		err = png.Encode(buffer, img)
+		if err != nil {
 			return fmt.Errorf("Could not save image to png")
 		}
-
-		buffer.Close()
-		buffer.Open(core.QIODevice__ReadOnly)
 
 		const bufferSize = 4096
 		bytesBuffer := make([]byte, bufferSize)
 		for {
-			n := buffer.Read(bytesBuffer, bufferSize)
+			n, err := buffer.Read(bytesBuffer)
 			if n <= 0 {
 				break
 			}

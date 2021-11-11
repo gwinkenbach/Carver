@@ -2,32 +2,24 @@ package util
 
 import (
 	"image"
-	"image/color"
 	"image/png"
 	"os"
 	"path"
-
-	"github.com/therecipe/qt/gui"
 )
 
-// QtImageToGray16Image converts a QT QImage to a Go Gray16 image an retiurns the result.
-func QtImageToGray16Image(qtImg *gui.QImage) *image.Gray16 {
-	if qtImg == nil || !qtImg.IsGrayscale() {
+// ImageToGrayImage converts an image to a Go Gray image an returns the result.
+func ImageToGrayImage(img image.Image) *image.Gray {
+	if img == nil {
 		return nil
 	}
 
-	width := qtImg.Width()
-	height := qtImg.Height()
-	bounds := image.Rect(0, 0, width, height)
-	grayImg := image.NewGray16(bounds)
+	bounds := img.Bounds()
+	grayImg := image.NewGray(bounds)
 
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
-			pix := qtImg.Pixel2(x, y)
-			// Cheat alert: we're dealing with a grayscale image where R = G = B, so we just grab
-			// the 8-bit G & B channels to make a 16-bit value.
-			gray := pix & 0xffff
-			grayImg.SetGray16(x, y, color.Gray16{Y: uint16(gray)})
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			var rgba = img.At(x, y)
+			grayImg.Set(x, y, rgba)
 		}
 	}
 

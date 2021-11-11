@@ -1,23 +1,28 @@
-# Copyright 2020 The Chromium OS Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOTEST=$(GOCMD) test -v
 GOCLEAN=$(GOCMD) clean
-GOGET = $(GOCMD) get
+GOGET = $(GOCMD) get -d
 GOFORMAT = $(GOCMD) fmt
 
 REMOTE_PACKS= \
-	github.com/therecipe/qt/cmd/... \
-	gotest.tools/v3
+	fyne.io/fyne/v2 \
+	fyne.io/fyne/v2/cmd/fyne \
+	github.com/disintegration/imaging \
+	github.com/sqweek/dialog \
+	gotest.tools/v3 \
+
 
 SRCS=main.go
-BIN=./bin/Carve
+BINNAME=Carve
+BINDIR=./bin
+BIN=$(BINDIR)/$(BINNAME)
+ICON=./app_icon.png
+APP=GoCarver
 
-all: build
-build: fetch
-test: fetch
+all: fetch build
+# build: fetch
+# test: fetch
 deploy: build
 run: deploy
 
@@ -27,6 +32,7 @@ test:
 	$(GOTEST) ./...
 fetch:
 	$(GOGET) $(REMOTE_PACKS)
+	$(GOCMD) mod vendor
 clean:
 	$(GOCLEAN)
 	rm -f $(BIN)
@@ -35,6 +41,8 @@ format:
 update:
 	$(GOGET) -u $(REMOTE_PACKS)
 deploy:
-	qtdeploy -qt_version 5.13.2 build desktop
+	fyne package -os darwin -exe $(BIN)  -release
+	rm -rf ./deploy/$(APP).app > /dev/null 2>&1
+	mv -f $(APP).app ./deploy
 run:
-	deploy/darwin/GoCarver.app/Contents/MacOS/GoCarver
+	deploy/$(APP).app/Contents/MacOS/$(BINNAME)

@@ -1,40 +1,34 @@
 package main
 
 import (
-	"os"
-
-	"github.com/therecipe/qt/gui"
-
 	"alvin.com/GoCarver/model"
-	"alvin.com/GoCarver/qtui"
-
-	"github.com/therecipe/qt/widgets"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/theme"
 )
 
-var menuBar *qtui.MenuBar
-
 func main() {
-	app := widgets.NewQApplication(len(os.Args), os.Args)
+	a := app.New()
+	a.Settings().SetTheme(theme.LightTheme())
 
-	window := widgets.NewQMainWindow(nil, 0)
-	window.SetMinimumSize2(680, 512)
-	window.SetWindowTitle("Carver")
+	w := a.NewWindow("Go Carver")
 
-	uiMgr := qtui.NewUIManager()
-	uiMgr.BuildUI()
-
+	uiManager := model.NewUIManager()
 	m := model.NewModel()
-	c := model.NewController(uiMgr, m)
-	c.ConnectUI(window)
+	c := model.NewController(m)
+	c.ConnectUI(uiManager, w)
 
-	menuBar := qtui.CreateMenuBar(window)
-	c.SetMenuBar(menuBar)
-
-	window.SetCentralWidget(uiMgr.GetRootPanel())
-	window.ConnectCloseEvent(func(event *gui.QCloseEvent) {
-		c.CheckShouldClose(event)
+	w.SetCloseIntercept(func() {
+		if c.CheckShouldClose() {
+			w.Close()
+		}
 	})
-	window.Show()
 
-	app.Exec()
+	a.Lifecycle().SetOnStarted(func() {
+		uiManager.FinalizeUI()
+	})
+
+	w.Resize(fyne.NewSize(820, 600))
+	w.SetFixedSize(true)
+	w.ShowAndRun()
 }
