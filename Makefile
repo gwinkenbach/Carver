@@ -20,11 +20,12 @@ BIN=$(BINDIR)/$(BINNAME)
 ICON=./app_icon.png
 APP=GoCarver
 
-all: fetch build
+build:
 # build: fetch
 # test: fetch
 deploy: build
 run: deploy
+all: fetch test build
 
 build:
 	$(GOBUILD) -o $(BIN) $(SRCS)
