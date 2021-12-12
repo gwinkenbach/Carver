@@ -17,16 +17,19 @@ type oneRun interface {
 
 var maxDepth = 0.0
 
+// carvingRun represent a single rectilinear run of the carving tool. It is used to manage
+// the multiple carving passes that are required to carve the material to the maximum depth
+// given the maximum step-down size.
 type carvingRun struct {
 	numSteps      int    // Number of steps along the run.
 	step          g.Vec2 // Increment vector for each step.
 	startingPoint g.Pt2  // Starting point for this run.
 	endPoint      g.Pt2  // End point for this run.
 
-	whiteCarvingDepth    float64 // The carving depth for white samples.
-	blackCarvingDepth    float64 // The carving depth for black samples.
-	currrentCarvingDepth float64 // The current carving depth, always starting at 0.
-	depthStepDown        float64 // How much to step down for each new pass.
+	whiteCarvingDepth   float64 // The carving depth for white samples.
+	blackCarvingDepth   float64 // The carving depth for black samples.
+	currentCarvingDepth float64 // The current carving depth, always starting at 0.
+	depthStepDown       float64 // How much to step down for each new pass.
 
 	enableCarveAtFullDepth bool
 
@@ -36,14 +39,20 @@ type carvingRun struct {
 	generator codeGenerator
 }
 
+// isDone returns whether the maximum carving depth has been achieved and no more carving
+// passes are needed.
 func (r *carvingRun) isDone() bool {
 	return !r.needMorePasses
 }
 
+// setEnableCarvingAtFulldepth is used to enable at full depth, ignoring the maximum
+// step-down size.
 func (r *carvingRun) setEnableCarvingAtFulldepth(enable bool) {
 	r.enableCarveAtFullDepth = enable
 }
 
+// doOnePass is called to generate one carving pass along the run. Parameter delta must be
+// either +1 or -1. It determines wether the run goes forward or backward along the run.
 func (r *carvingRun) doOnePass(delta float64) {
 	if !r.needMorePasses {
 		return
@@ -55,15 +64,15 @@ func (r *carvingRun) doOnePass(delta float64) {
 
 	// Check wether the carving depth reaches below the old carving depth. If it doesn't we
 	// can discard the path. This is mostly useful on the very fisrt pass.
-	oldCarvingDepth := r.currrentCarvingDepth
+	oldCarvingDepth := r.currentCarvingDepth
 	discardPath := true
 
 	// If the carving depth doesn't go as deep as the deepest sampled carving depth,
 	// we'll need more passes.
 	r.needMorePasses = false
-	r.currrentCarvingDepth = r.currrentCarvingDepth - r.depthStepDown
+	r.currentCarvingDepth = r.currentCarvingDepth - r.depthStepDown
 
-	// fmt.Printf("*** Run y=%f, carving depth = %f, delta = %2.0f\n", r.startingPoint.Y, r.currrentCarvingDepth, delta)
+	// fmt.Printf("*** Run y=%f, carving depth = %f, delta = %2.0f\n", r.startingPoint.Y, r.currentCarvingDepth, delta)
 	// fmt.Printf("        black=%5.2f, white=%5.2f\n", r.blackCarvingDepth, r.whiteCarvingDepth)
 
 	var origin geom.Pt2
@@ -119,6 +128,8 @@ func (r *carvingRun) doOnePass(delta float64) {
 	}
 }
 
+// getCarvingDepthAt samples and returns the carving depth at the given location. This
+// function takes into account whether carving-at-full-depth is enabled.
 func (r *carvingRun) getCarvingDepthAt(q *geom.Pt2) (depth float64, clipped bool) {
 	s := r.sampler.At(q)
 	d := (1-s)*r.blackCarvingDepth + s*r.whiteCarvingDepth
@@ -132,16 +143,17 @@ func (r *carvingRun) getCarvingDepthAt(q *geom.Pt2) (depth float64, clipped bool
 	if r.enableCarveAtFullDepth {
 		clipped = false
 	} else {
-		clipped = d < r.currrentCarvingDepth-0.05
+		clipped = d < r.currentCarvingDepth-0.05
 		// fmt.Printf("     target depth = %f5.2f, clip = %v\n", depth, clipped)
 		if clipped {
-			depth = r.currrentCarvingDepth
+			depth = r.currentCarvingDepth
 		}
 	}
 
 	return
 }
 
+// Sanitize the carving run, ensuring that it is in a valid configuration.
 func (r *carvingRun) sanitize() {
 	if r.numSteps <= 0 {
 		r.numSteps = 1

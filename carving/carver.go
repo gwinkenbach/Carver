@@ -19,6 +19,11 @@ const (
 	minStepSize = 0.1 // Minimum step size in mm, a.k.a. resolution.
 )
 
+// Carver provides support for generating carving code.
+// Usage:
+// 1. Create a carver with NewCarver.
+// 2. Configure the various carving parameters with the ConfigureXXX functions.
+// 3. Generate the carving code by calling the Run function.
 type Carver struct {
 	materialDimMm     g.Size2
 	materialTopMm     float64
@@ -40,10 +45,13 @@ type Carver struct {
 	output  io.Writer
 }
 
+// NewCarver creates and return a new carver that outputs carving code to the
+// given writer.
 func NewCarver(output io.Writer) *Carver {
 	return &Carver{output: output}
 }
 
+// ConfigureMaterial is used to configure the carving-material parameters.
 func (c *Carver) ConfigureMaterial(
 	materialDimMm g.Size2,
 	carvingAreaOrigin g.Pt2,
@@ -56,6 +64,7 @@ func (c *Carver) ConfigureMaterial(
 	c.materialTopMm = materialTopMm
 }
 
+// ConfigureTool is used to configure the carving-tool parameters.
 func (c *Carver) ConfigureTool(
 	toolType int,
 	toolDiameterMm float64,
@@ -67,6 +76,8 @@ func (c *Carver) ConfigureTool(
 	c.vertFeedRate = verticalFeedRateMmPerMin
 }
 
+// ConfigureCarvingProfile is used to configure the carving-profile parameters,
+// such as the height of the material, carving mode, etc.
 func (c *Carver) ConfigureCarvingProfile(
 	sampler hmap.ScalarGridSampler,
 	topHeightMm float64,
@@ -83,6 +94,8 @@ func (c *Carver) ConfigureCarvingProfile(
 	c.maxStepDown = maxStepDownSizeMm
 }
 
+// Run is called to generate the carving code. It is ok to (re)configure the carver and
+// call Run multiple times. However, all output go to the same writer.
 func (c *Carver) Run() {
 	gen := newGrblGenerator(c.horizFeedRate, c.vertFeedRate)
 	gen.configure(c.output, c.materialDimMm.W, c.materialDimMm.H, 0)

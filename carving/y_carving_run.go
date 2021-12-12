@@ -56,7 +56,7 @@ func (r *yCarvingRun) configure(
 	r.blackCarvingDepth = blackCarvingDepth
 	r.whiteCarvingDepth = whiteCarvingDepth
 	r.depthStepDown = depthStepDown
-	r.currrentCarvingDepth = 0.0
+	r.currentCarvingDepth = 0.0
 
 	r.needMorePasses = true
 
