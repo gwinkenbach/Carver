@@ -4,13 +4,16 @@ GOTEST=$(GOCMD) test -v
 GOCLEAN=$(GOCMD) clean
 GOGET = $(GOCMD) get -d
 GOFORMAT = $(GOCMD) fmt
+GOINSTALL = $(GOCMD) install
 
 REMOTE_PACKS= \
 	fyne.io/fyne/v2 \
-	fyne.io/fyne/v2/cmd/fyne \
 	github.com/disintegration/imaging \
 	github.com/sqweek/dialog \
 	gotest.tools/v3 \
+
+REMOTE_BIN = \
+	fyne.io/fyne/v2/cmd/fyne \
 
 
 SRCS=main.go
@@ -41,9 +44,11 @@ format:
 	$(GOFORMAT) $(SRCS)
 update:
 	$(GOGET) -u $(REMOTE_PACKS)
+	$(GOINSTALL) $(REMOTE_BIN)
 deploy:
 	fyne package -os darwin -exe $(BIN)  -release
 	rm -rf ./deploy/$(APP).app > /dev/null 2>&1
 	mv -f $(APP).app ./deploy
+	mkdir -p ./deploy
 run:
 	deploy/$(APP).app/Contents/MacOS/$(BINNAME)
