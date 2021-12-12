@@ -1,8 +1,11 @@
 {
   "launch": {
-
     "configurations": [],
     "compounds": []
+  },
+  "editor.rulers": [80,100],
+  "workbench.colorCustomizations": {
+    "editorRuler.foreground": "#444466"
   },
   "files.exclude": {
     ".vscode":true,
