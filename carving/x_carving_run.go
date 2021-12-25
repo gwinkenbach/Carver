@@ -7,12 +7,14 @@ import (
 	"alvin.com/GoCarver/hmap"
 )
 
+// A xCarvingRun is a carving run along the x-coordinate, i.e. along a horizontal
+// line with a given, constant y-coordinate.
 type xCarvingRun struct {
 	carvingRun
 }
 
 func (r *xCarvingRun) configure(
-	sampler hmap.ScalarGridSampler, // The sampler to get the image value at each point.
+	sampler hmap.ScalarGridSampler, // The sampler to get the height-map value at each point.
 	generator codeGenerator, // The output code generator.
 	carvingWidth float64, // The width along x of the carving area.
 	xAtLeft float64, // The x-coordinate at the left side of each run.

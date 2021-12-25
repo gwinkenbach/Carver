@@ -11,6 +11,8 @@ type yCarvingRun struct {
 	carvingRun
 }
 
+// A xCarvingRun is a carving run along the y-coordinate, i.e. along a vertical
+// line with a given, constant x-coordinate.
 func (r *yCarvingRun) configure(
 	sampler hmap.ScalarGridSampler, // The sampler to get the image value at each point.
 	generator codeGenerator, // The output code generator.
