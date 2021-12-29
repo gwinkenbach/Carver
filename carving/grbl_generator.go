@@ -35,6 +35,7 @@ const (
 
 type pt3 = geom.Pt3
 
+// grblGenerator implements the codeGenerator interface to generator GRBL code.
 type grblGenerator struct {
 	horizFeedRate   float64
 	vertFeedRate    float64
@@ -112,7 +113,8 @@ func (g *grblGenerator) addPathPoint(q pt3) {
 	}
 }
 
-// Returns whether point q should be edded to the path. This is a very trivial test.
+// Returns whether point q should be added to the path. This is used to eliminate points
+// that can be trivially discarded, such as successive, co-located points.
 func (g *grblGenerator) shouldUsePoint(q pt3) bool {
 	numPoints := len(g.currentPath)
 	if numPoints == 0 {
