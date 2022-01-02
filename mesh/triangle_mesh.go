@@ -7,7 +7,7 @@ import (
 	"alvin.com/GoCarver/hmap"
 )
 
-// Rows of vertices form a grid and each square in that grid form 2 triangles.
+// gridRow: Rows of vertices form a grid; each square in that grid form 2 triangles.
 // row i+1: +---+---+---+-- -
 //          |  /|  /|  /|
 //          | / | / | / |
@@ -34,6 +34,10 @@ type triangleArray struct {
 	iteratorIndex int
 }
 
+// NewTriangleMesh creates and returns a new triangle mesh generated from the min/max corners
+// of the grid and a sampler. The number of vertices along x and y in the grid is determined
+// by the number of samples that the sampler generate in these directions. (See interface
+// iSampler.) A grid point is generated for each sample.
 func NewTriangleMesh(
 	pMin geom.Pt2, pMax geom.Pt2,
 	zBlack, zWhite float64,
@@ -99,6 +103,7 @@ func (t *TriangleMesh) GetTriangle(iX, iY int) Triangle {
 	return trg
 }
 
+// GetFootprintForTriangle returns the footprint for triangle at indices (iX, iY).
 func (t *TriangleMesh) GetFootprintForTriangle(iX, iY int) Footprint {
 	nX, nY := t.GetNumTriangles()
 	if iX < 0 || iX >= nX || iY < 0 || iY >= nY {
@@ -372,10 +377,12 @@ func (t *TriangleMesh) populateNormalsForRow(rowIndex int) {
 	}
 }
 
+// GetTriangleCount implements interface TriangleIterator.
 func (t *triangleArray) GetTriangleCount() int {
 	return len(t.triangles)
 }
 
+// Next implements interface TriangleIterator.
 func (t *triangleArray) Next() Triangle {
 	if t.iteratorIndex >= t.GetTriangleCount() {
 		return nil
