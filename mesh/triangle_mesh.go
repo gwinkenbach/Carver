@@ -29,10 +29,13 @@ type TriangleMesh struct {
 	x     []float64 // X-coordinate for N+1 vertices along the x-axis.
 }
 
+// triangleArray implements interface TriangleIterator
 type triangleArray struct {
 	triangles     []meshTriangle
 	iteratorIndex int
 }
+
+var _ TriangleIterator = (*triangleArray)(nil)
 
 // NewTriangleMesh creates and returns a new triangle mesh generated from the min/max corners
 // of the grid and a sampler. The number of vertices along x and y in the grid is determined

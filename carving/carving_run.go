@@ -39,6 +39,8 @@ type carvingRun struct {
 	generator codeGenerator
 }
 
+var _ oneRun = (*carvingRun)(nil)
+
 // isDone returns whether the maximum carving depth has been achieved and no more carving
 // passes are needed.
 func (r *carvingRun) isDone() bool {

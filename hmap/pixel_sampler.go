@@ -23,6 +23,8 @@ type pixelDepthSampler struct {
 	matToPixelXform geom.Matrix33 // Material to pixel coordinate transform.
 }
 
+var _ ScalarGridSampler = (*pixelDepthSampler)(nil)
+
 func NewPixelDepthSampler(
 	mcToNicXform *geom.Matrix33,
 	carvingAreaOrigin geom.Pt2,

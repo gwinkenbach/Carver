@@ -47,6 +47,8 @@ type grblGenerator struct {
 	grblOut io.Writer
 }
 
+var _ codeGenerator = (*grblGenerator)(nil)
+
 func newGrblGenerator(horizFeedRate, vertFeedRate float64) *grblGenerator {
 	return &grblGenerator{
 		horizFeedRate: horizFeedRate,

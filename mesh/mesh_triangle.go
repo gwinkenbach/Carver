@@ -14,6 +14,8 @@ type meshTriangle struct {
 	vertices [3]geom.Pt3
 }
 
+var _ Triangle = (*meshTriangle)(nil)
+
 func (m *meshTriangle) Vertex(i int) geom.Pt3 {
 	switch {
 	case i <= 0:
