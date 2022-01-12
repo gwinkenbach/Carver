@@ -36,6 +36,6 @@ func (p *Pt3) Eq(q Pt3) bool {
 }
 
 // EqXyz returns whether point p is equal to (x, y, z).
-func (p *Pt3) EqXyz(x, y, z float64) bool {
+func (p Pt3) EqXyz(x, y, z float64) bool {
 	return p.X == x && p.Y == y && p.Z == z
 }

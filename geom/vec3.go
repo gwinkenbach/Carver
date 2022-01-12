@@ -39,7 +39,7 @@ func (v *Vec3) Dot(w Vec3) float64 {
 
 // Cross returns the cross product v x w
 func (v *Vec3) Cross(w Vec3) Vec3 {
-	return NewVec3(v.Y*w.Z-v.Z*w.Y, v.Z*w.X-v.X*w.Z, v.X*w.Y-v.Y*w.Z)
+	return NewVec3(v.Y*w.Z-v.Z*w.Y, v.Z*w.X-v.X*w.Z, v.X*w.Y-v.Y*w.X)
 }
 
 // Norm normalizes v in place. Fatal error if v has zero length.
@@ -58,4 +58,9 @@ func (v *Vec3) LenSq() float64 {
 // Len returns the length of vector v.
 func (v *Vec3) Len() float64 {
 	return math.Sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
+}
+
+// Returns whether vector v is strictly equal to (x, y, z)
+func (v Vec3) EqXyz(x, y, z float64) bool {
+	return v.X == x && v.Y == y && v.Z == z
 }
