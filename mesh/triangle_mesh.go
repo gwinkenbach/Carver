@@ -22,7 +22,7 @@ type gridRow struct {
 }
 
 // TriangleMesh is a regular NxM triangle mesh representing the height map built from
-// a scalar height map (interface iSampler).
+// a scalar height map (interface codeSampler).
 type TriangleMesh struct {
 	xyBox Footprint // The mesh footprint.
 	rows  []gridRow // Rows along the y-axis.
@@ -58,12 +58,12 @@ func NewTriangleMesh(
 }
 
 // GetNumTriangles returns the number of triangles in the mesh as pair of numbers (nX, nY)
-// where nX is the number of triangles along X and nY is the number of triangles along Y.
+// where nX is the number of triangles along X and nY is the number of triangle rows along Y.
 func (t *TriangleMesh) GetNumTriangles() (nX int, nY int) {
-	nY = len(t.rows)
+	nY = len(t.rows) - 1
 	nX = 0
 	if nY > 0 {
-		nX = len(t.x)
+		nX = 2 * (len(t.x) - 1)
 	}
 	return
 }
@@ -78,7 +78,7 @@ func (t *TriangleMesh) GetTriangle(iX, iY int) Triangle {
 	}
 
 	trg := &meshTriangle{}
-	trg.normal = t.rows[nY].normals[nX]
+	trg.normal = t.rows[iY].normals[iX]
 
 	// Vertices and triangles are layed out as follows in the grid:
 	// nY+1 +---+
@@ -87,20 +87,20 @@ func (t *TriangleMesh) GetTriangle(iX, iY int) Triangle {
 	//      |/  |
 	//   nY +---+
 	//     nV   nV+1
-	iT := nX & 0x01
-	nV := nX / 2
-	xLeft := t.x[nV]
-	xRight := t.x[nV+1]
-	yBottom := t.rows[nY].y
-	yTop := t.rows[nY+1].y
+	iT := iX & 0x01
+	iV := iX / 2
+	xLeft := t.x[iV]
+	xRight := t.x[iV+1]
+	yBottom := t.rows[iY].y
+	yTop := t.rows[iY+1].y
 	if iT == 0 {
-		trg.vertices[0] = geom.NewPt3(xLeft, yBottom, t.rows[nY].z[nV])
-		trg.vertices[1] = geom.NewPt3(xLeft, yTop, t.rows[nY+1].z[nV])
-		trg.vertices[2] = geom.NewPt3(xRight, yTop, t.rows[nY+1].z[nV+1])
+		trg.vertices[0] = geom.NewPt3(xLeft, yBottom, t.rows[iY].z[iV])
+		trg.vertices[1] = geom.NewPt3(xLeft, yTop, t.rows[iY+1].z[iV])
+		trg.vertices[2] = geom.NewPt3(xRight, yTop, t.rows[iY+1].z[iV+1])
 	} else {
-		trg.vertices[0] = geom.NewPt3(xLeft, yBottom, t.rows[nY].z[nV])
-		trg.vertices[1] = geom.NewPt3(xRight, yTop, t.rows[nY+1].z[nV+1])
-		trg.vertices[2] = geom.NewPt3(xRight, yBottom, t.rows[nY].z[nV+1])
+		trg.vertices[0] = geom.NewPt3(xLeft, yBottom, t.rows[iY].z[iV])
+		trg.vertices[1] = geom.NewPt3(xRight, yTop, t.rows[iY+1].z[iV+1])
+		trg.vertices[2] = geom.NewPt3(xRight, yBottom, t.rows[iY].z[iV+1])
 	}
 
 	return trg
@@ -122,11 +122,11 @@ func (t *TriangleMesh) GetFootprintForTriangle(iX, iY int) Footprint {
 	//   nY +---+
 	//     nV   nV+1
 	f := Footprint{}
-	nV := nX / 2
+	nV := iX / 2
 	f.PMin.X = t.x[nV]
-	f.PMin.Y = t.rows[nY].y
+	f.PMin.Y = t.rows[iY].y
 	f.PMax.X = t.x[nV+1]
-	f.PMax.Y = t.rows[nY+1].y
+	f.PMax.Y = t.rows[iY+1].y
 
 	return f
 }
@@ -146,7 +146,10 @@ func (t *TriangleMesh) GetTrianglesUnderFootprint(f Footprint) TriangleIterator 
 		return &triangleArray{}
 	}
 
+	// TODO: check footprints that lie entirely on one side of diagonal between triangles.
+
 	numTriangles := 2 * (iMaxRow - iMinRow) * (iMaxCol - iMinCol)
+	// fmt.Printf("Num triangles: %d\n", numTriangles)
 	ta := &triangleArray{
 		triangles:     make([]meshTriangle, numTriangles),
 		iteratorIndex: 0,
@@ -216,6 +219,8 @@ func (t *TriangleMesh) findRowsForFootprint(f Footprint) (iMinRow, iMaxRow int) 
 		iMaxRow++
 	}
 
+	// fmt.Printf("Print min/max rows: %d - %d\n", iMinRow, iMaxRow)
+
 	return
 }
 
@@ -260,6 +265,8 @@ func (t *TriangleMesh) findColumnsForFootprint(f Footprint) (iMinCol, iMaxCol in
 		iMaxCol++
 	}
 
+	// fmt.Printf("Min.max column: %d, %d\n", iMinCol, iMaxCol)
+
 	return
 }
 
@@ -292,6 +299,8 @@ func (t *TriangleMesh) buildMesh(zBlack, zWhite float64, sampler hmap.ScalarGrid
 
 		t.x[i] = x
 	}
+
+	// fmt.Printf("x-coordinates: %v\n", t.x)
 
 	// Fill rows.
 	t.rows = make([]gridRow, numGridRows)
@@ -368,15 +377,21 @@ func (t *TriangleMesh) populateNormalsForRow(rowIndex int) {
 		p1 := geom.NewPt3(xk, yj, zj[k])
 		p2 := geom.NewPt3(xl, yj, zj[k+1])
 
+		// fmt.Printf("Normal: p0=%v, p1=%v, p2=%v", p0, p1, p2)
+
 		w1 := p1.Sub(p0)
 		w2 := p2.Sub(p0)
-		normal := w1.Cross(w2)
-		t.rows[rowIndex].normals[2*k] = normal.Norm()
+		n1 := w2.Cross(w1)
+		t.rows[rowIndex].normals[2*k] = n1.Norm()
+
+		// fmt.Printf(" - w1=%v, w2=%v", w1, w2)
 
 		p2 = geom.NewPt3(xl, yi, zi[k+1])
 		w1 = p2.Sub(p0)
-		normal = w2.Cross(w1)
-		t.rows[rowIndex].normals[2*k+1] = normal.Norm()
+		n2 := w1.Cross(w2)
+		t.rows[rowIndex].normals[2*k+1] = n2.Norm()
+
+		// fmt.Printf(" - n1=%v, n2=%v\n", n1, n2)
 	}
 }
 
