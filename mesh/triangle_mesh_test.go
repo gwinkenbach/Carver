@@ -1,13 +1,14 @@
 package mesh
 
 import (
-	"fmt"
 	"math"
+	"os"
 	"testing"
 
 	"alvin.com/GoCarver/geom"
 	"alvin.com/GoCarver/hmap"
 
+	log "github.com/sirupsen/logrus"
 	a "gotest.tools/assert"
 	is "gotest.tools/assert/cmp"
 )
@@ -18,7 +19,7 @@ const (
 	yMin       = 0
 	yMax       = 100
 	zBlack     = 0
-	zWhite     = 10
+	zWhite     = 10 // It's 1/10 of xMax, yMax and is used as such in tests.
 	numSamples = 5
 )
 
@@ -62,6 +63,14 @@ func (s *fourByFourSampler) GetNumSamplesFromP0ToP1(p0, p1 geom.Pt2) int {
 	}
 
 	return 0
+}
+
+func TestMain(m *testing.M) {
+	log.SetLevel(log.DebugLevel)
+	log.SetFormatter(&log.TextFormatter{
+		TimestampFormat: "15:04:05",
+	})
+	os.Exit(m.Run())
 }
 
 func TestFlatTriangleMesh(t *testing.T) {
@@ -136,6 +145,74 @@ func TestFlatTriangleMesh(t *testing.T) {
 	a.Assert(t, trg.GetTriangleCount() == 32)
 }
 
+func TestXSlopeTriangleMesh(t *testing.T) {
+	// 4x4 sampler with xWeight = 1 produces a flat mesh sloped up toward increasing X.
+	s := new4x4Sampler(1, 0)
+	p1 := geom.NewPt2(xMin, yMin)
+	p2 := geom.NewPt2(xMax, yMax)
+	m := NewTriangleMesh(p1, p2, zBlack, zWhite, s)
+	a.Assert(t, m != nil)
+
+	nX, nY := m.GetNumTriangles()
+	a.Assert(t, is.Equal(nX, 8))
+	a.Assert(t, is.Equal(nY, 4))
+
+	logMeshTriangles(m, t)
+
+	v1 := geom.NewVec3(100, 0, 10)
+	v2 := geom.NewVec3(0, 100, 0)
+	meshNormal := v1.Cross(v2)
+	visitAllTriangles(m, t, func(iX, iY int, trg Triangle, t *testing.T) {
+		// Mesh normal and triangle normal should be colinear, within tolerance.
+		a.Assert(t, trg.UnitNormal().Cross(meshNormal).Len() < 1e-6)
+		a.Assert(t, trg.Vertex(0).Z == trg.Vertex(0).X/10)
+		a.Assert(t, trg.Vertex(1).Z == trg.Vertex(1).X/10)
+		a.Assert(t, trg.Vertex(2).Z == trg.Vertex(2).X/10)
+	})
+
+	fp := NewFootprint(geom.NewPt2(25.01, 25.01), geom.NewPt2(49.99, 49.99))
+	trg := m.GetTrianglesUnderFootprint(fp)
+	a.Assert(t, trg.GetTriangleCount() == 2)
+	t1 := trg.Next()
+	a.Assert(t, t1.Vertex(0).EqXyz(25, 25, 2.5))
+	a.Assert(t, t1.Vertex(1).EqXyz(25, 50, 2.5))
+	a.Assert(t, t1.Vertex(2).EqXyz(50, 50, 5))
+}
+
+func TestYSlopeTriangleMesh(t *testing.T) {
+	// 4x4 sampler with yWeight = 1 produces a flat mesh sloped up toward increasing Y.
+	s := new4x4Sampler(0, 1)
+	p1 := geom.NewPt2(xMin, yMin)
+	p2 := geom.NewPt2(xMax, yMax)
+	m := NewTriangleMesh(p1, p2, zBlack, zWhite, s)
+	a.Assert(t, m != nil)
+
+	nX, nY := m.GetNumTriangles()
+	a.Assert(t, is.Equal(nX, 8))
+	a.Assert(t, is.Equal(nY, 4))
+
+	logMeshTriangles(m, t)
+
+	v1 := geom.NewVec3(100, 0, 0)
+	v2 := geom.NewVec3(0, 100, 10)
+	meshNormal := v1.Cross(v2)
+	visitAllTriangles(m, t, func(iX, iY int, trg Triangle, t *testing.T) {
+		// Mesh normal and triangle normal should be colinear, within tolerance.
+		a.Assert(t, trg.UnitNormal().Cross(meshNormal).Len() < 1e-6)
+		a.Assert(t, trg.Vertex(0).Z == trg.Vertex(0).Y/10)
+		a.Assert(t, trg.Vertex(1).Z == trg.Vertex(1).Y/10)
+		a.Assert(t, trg.Vertex(2).Z == trg.Vertex(2).Y/10)
+	})
+
+	fp := NewFootprint(geom.NewPt2(25.01, 25.01), geom.NewPt2(49.99, 49.99))
+	trg := m.GetTrianglesUnderFootprint(fp)
+	a.Assert(t, trg.GetTriangleCount() == 2)
+	t1 := trg.Next()
+	a.Assert(t, t1.Vertex(0).EqXyz(25, 25, 2.5))
+	a.Assert(t, t1.Vertex(1).EqXyz(25, 50, 5))
+	a.Assert(t, t1.Vertex(2).EqXyz(50, 50, 5))
+}
+
 func visitAllTriangles(m *TriangleMesh, t *testing.T, visitor func(iX, iY int, trg Triangle, t *testing.T)) {
 	nX, nY := m.GetNumTriangles()
 	for y := 0; y < nY; y++ {
@@ -146,9 +223,9 @@ func visitAllTriangles(m *TriangleMesh, t *testing.T, visitor func(iX, iY int, t
 	}
 }
 
-func printMeshTriangles(m *TriangleMesh, t *testing.T) {
+func logMeshTriangles(m *TriangleMesh, t *testing.T) {
 	visitor := func(iX, iY int, trg Triangle, t *testing.T) {
-		fmt.Printf("T%d%d: %v\n", iY, iX, trg)
+		log.Debugf("T%d%d: %v", iY, iX, trg)
 	}
 	visitAllTriangles(m, t, visitor)
 }
