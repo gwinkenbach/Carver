@@ -66,7 +66,7 @@ func (s *fourByFourSampler) GetNumSamplesFromP0ToP1(p0, p1 geom.Pt2) int {
 }
 
 func TestMain(m *testing.M) {
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.WarnLevel)
 	log.SetFormatter(&log.TextFormatter{
 		TimestampFormat: "15:04:05",
 	})
