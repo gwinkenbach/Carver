@@ -9,6 +9,7 @@ GOINSTALL = $(GOCMD) install
 REMOTE_PACKS= \
 	fyne.io/fyne/v2 \
 	github.com/disintegration/imaging \
+	github.com/sirupsen/logrus \
 	github.com/sqweek/dialog \
 	gotest.tools/v3 \
 
