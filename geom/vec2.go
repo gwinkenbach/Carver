@@ -18,31 +18,31 @@ func NewVec2FromFloat32(x, y float32) Vec2 {
 }
 
 // Add returns v + w
-func (v *Vec2) Add(w Vec2) Vec2 {
+func (v Vec2) Add(w Vec2) Vec2 {
 	return Vec2{X: v.X + w.X, Y: v.Y + w.Y}
 }
 
 // Sub returns v - w
-func (v *Vec2) Sub(w Vec2) Vec2 {
+func (v Vec2) Sub(w Vec2) Vec2 {
 	return Vec2{X: v.X - w.X, Y: v.Y - w.Y}
 }
 
 // Scale returns v * s
-func (v *Vec2) Scale(s float64) Vec2 {
+func (v Vec2) Scale(s float64) Vec2 {
 	return Vec2{X: v.X * s, Y: v.Y * s}
 }
 
 // Dot returns the dot product v * w
-func (v *Vec2) Dot(w Vec2) float64 {
+func (v Vec2) Dot(w Vec2) float64 {
 	return v.X*w.X + v.Y*w.Y
 }
 
 // Norm normalizes v in place. Fatal error if v has zero length.
 // Returns v.
-func (v *Vec2) Norm() Vec2 {
-	l := math.Sqrt(v.Dot(*v))
-	*v = v.Scale(1.0 / l)
-	return *v
+func (v Vec2) Norm() Vec2 {
+	l := math.Sqrt(v.Dot(v))
+	v = v.Scale(1.0 / l)
+	return v
 }
 
 // LenSq returns the length of vector v squared.

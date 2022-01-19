@@ -16,22 +16,22 @@ func NewPt2FromFloat32(x, y float32) Pt2 {
 }
 
 // Add returns p + v
-func (p *Pt2) Add(v Vec2) Pt2 {
+func (p Pt2) Add(v Vec2) Pt2 {
 	return Pt2{X: p.X + v.X, Y: p.Y + v.Y}
 }
 
 // SubV returns p - v
-func (p *Pt2) SubV(v Vec2) Pt2 {
+func (p Pt2) SubV(v Vec2) Pt2 {
 	return Pt2{X: p.X - v.X, Y: p.Y - v.Y}
 }
 
 // Sub returns p - q
-func (p *Pt2) Sub(q Pt2) Vec2 {
+func (p Pt2) Sub(q Pt2) Vec2 {
 	return Vec2{X: p.X - q.X, Y: p.Y - q.Y}
 }
 
 // Xform returns p * m, or p transformed by matrix m.
-func (p *Pt2) Xform(m *Matrix33) Pt2 {
+func (p Pt2) Xform(m *Matrix33) Pt2 {
 	return Pt2{
 		X: p.X*m.a[0][0] + p.Y*m.a[1][0] + m.a[2][0],
 		Y: p.X*m.a[0][1] + p.Y*m.a[1][1] + m.a[2][1],
@@ -39,6 +39,6 @@ func (p *Pt2) Xform(m *Matrix33) Pt2 {
 }
 
 // Eq returns whether point p is equal to (x, y).
-func (p *Pt2) Eq(x, y float64) bool {
+func (p Pt2) Eq(x, y float64) bool {
 	return p.X == x && p.Y == y
 }
