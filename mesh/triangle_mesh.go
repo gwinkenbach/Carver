@@ -273,8 +273,8 @@ func (t *TriangleMesh) findColumnsForFootprint(f Footprint) (iMinCol, iMaxCol in
 func (t *TriangleMesh) buildMesh(zBlack, zWhite float64, sampler hmap.ScalarGridSampler) {
 	pMin := t.xyBox.PMin
 	pMax := t.xyBox.PMax
-	numGridRows := sampler.GetNumSamplesFromP0ToP1(pMin, geom.NewPt2(pMin.X, pMax.Y))
-	numVerticesPerRow := sampler.GetNumSamplesFromP0ToP1(pMin, geom.NewPt2(pMax.X, pMin.Y))
+	numGridRows := sampler.GetNumSamplesFromY0ToY1(pMin.Y, pMax.Y)
+	numVerticesPerRow := sampler.GetNumSamplesFromX0ToX1(pMin.X, pMax.X)
 
 	if numGridRows <= 1 {
 		numGridRows = 2

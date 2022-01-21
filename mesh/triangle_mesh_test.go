@@ -49,20 +49,18 @@ func (s *fourByFourSampler) At(p *geom.Pt2) float64 {
 	return ((1.0 - s.xWeight) + s.xWeight*xVal[i]) * ((1.0 - s.yWeight) + s.yWeight*yVal[j])
 }
 
-func (s *fourByFourSampler) GetNumSamplesFromP0ToP1(p0, p1 geom.Pt2) int {
-	if p0.X == p1.X {
-		p0.Y = math.Max(yMin, p0.Y)
-		p1.Y = math.Min(yMax, p1.Y)
-		return int(numSamples * (p1.Y - p0.Y) / (yMax - yMin))
+func (s *fourByFourSampler) GetNumSamplesFromX0ToX1(x0, x1 float64) int {
+	if x0 > x1 {
+		x0, x1 = x1, x0
 	}
+	return int(numSamples * (x1 - x0) / (xMax - xMin))
+}
 
-	if p0.Y == p1.Y {
-		p0.X = math.Max(xMin, p0.X)
-		p1.X = math.Min(xMax, p1.X)
-		return int(numSamples * (p1.X - p0.X) / (xMax - xMin))
+func (s *fourByFourSampler) GetNumSamplesFromY0ToY1(y0, y1 float64) int {
+	if y0 > y1 {
+		y0, y1 = y1, y0
 	}
-
-	return 0
+	return int(numSamples * (y1 - y0) / (yMax - yMin))
 }
 
 func TestMain(m *testing.M) {

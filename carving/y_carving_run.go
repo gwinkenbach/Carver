@@ -30,9 +30,7 @@ func (r *yCarvingRun) configure(
 
 	// Get the number of available sample along X. We need at least two samples,
 	// one at each end of the run.
-	p0 := geom.NewPt2(runX, yAtBottom)
-	p1 := geom.NewPt2(runX, yAtBottom+carvingHeight)
-	numSamples := sampler.GetNumSamplesFromP0ToP1(p0, p1)
+	numSamples := sampler.GetNumSamplesFromY0ToY1(yAtBottom, yAtBottom+carvingHeight)
 	if numSamples <= 1 {
 		numSamples = 2
 	}
@@ -50,6 +48,8 @@ func (r *yCarvingRun) configure(
 	r.sampler = sampler
 	r.generator = generator
 
+	p0 := geom.NewPt2(runX, yAtBottom)
+	p1 := geom.NewPt2(runX, yAtBottom+carvingHeight)
 	r.numSteps = numSamples - 1
 	r.step = geom.NewVec2(0, deltaY)
 	r.startingPoint = p0

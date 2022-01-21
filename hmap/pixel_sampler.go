@@ -47,9 +47,16 @@ func NewPixelDepthSampler(
 	return sampler
 }
 
-func (p *pixelDepthSampler) GetNumSamplesFromP0ToP1(p0, p1 geom.Pt2) int {
-	q0 := p0.Xform(&p.matToPixelXform)
-	q1 := p1.Xform(&p.matToPixelXform)
+func (p *pixelDepthSampler) GetNumSamplesFromX0ToX1(x0, x1 float64) int {
+	q0 := geom.NewPt2(x0, 0).Xform(&p.matToPixelXform)
+	q1 := geom.NewPt2(x1, 0).Xform(&p.matToPixelXform)
+	l := q1.Sub(q0)
+	return int(l.Len())
+}
+
+func (p *pixelDepthSampler) GetNumSamplesFromY0ToY1(y0, y1 float64) int {
+	q0 := geom.NewPt2(0, y0).Xform(&p.matToPixelXform)
+	q1 := geom.NewPt2(0, y1).Xform(&p.matToPixelXform)
 	l := q1.Sub(q0)
 	return int(l.Len())
 }
