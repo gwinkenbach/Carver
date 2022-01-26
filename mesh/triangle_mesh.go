@@ -68,6 +68,11 @@ func (t *TriangleMesh) GetNumTriangles() (nX int, nY int) {
 	return
 }
 
+// GetMeshFootprint returns the footprint for the entire mesh.
+func (t *TriangleMesh) GetMeshFootprint() Footprint {
+	return t.xyBox
+}
+
 // GetTriangle returns the triangle at index (iX, iY) where 0 <= iX < nX and
 // 0 <= iY < nY. Triangle counts nX and nY are returned by GetNumTriangles.
 func (t *TriangleMesh) GetTriangle(iX, iY int) Triangle {
