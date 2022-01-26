@@ -141,6 +141,23 @@ func TestFlatTriangleMesh(t *testing.T) {
 	fp = NewFootprint(geom.NewPt2(0, 0), geom.NewPt2(100, 100))
 	trg = m.GetTrianglesUnderFootprint(fp)
 	a.Assert(t, trg.GetTriangleCount() == 32)
+
+	// Test 0-width/height footprints.
+	fp = NewFootprint(geom.NewPt2(10, 10), geom.NewPt2(10, 10))
+	trg = m.GetTrianglesUnderFootprint(fp)
+	a.Assert(t, trg.GetTriangleCount() == 2)
+
+	fp = NewFootprint(geom.NewPt2(95, 95), geom.NewPt2(95, 95))
+	trg = m.GetTrianglesUnderFootprint(fp)
+	a.Assert(t, trg.GetTriangleCount() == 2)
+
+	fp = NewFootprint(geom.NewPt2(5, 10), geom.NewPt2(95, 10))
+	trg = m.GetTrianglesUnderFootprint(fp)
+	a.Assert(t, trg.GetTriangleCount() == 8)
+
+	fp = NewFootprint(geom.NewPt2(5, 5), geom.NewPt2(5, 95))
+	trg = m.GetTrianglesUnderFootprint(fp)
+	a.Assert(t, trg.GetTriangleCount() == 8)
 }
 
 func TestXSlopeTriangleMesh(t *testing.T) {
