@@ -91,7 +91,7 @@ func (r *carvingRun) doOnePass(delta float64) {
 
 			origin = pt
 
-			depth, clipped = r.getCarvingDepthAt(&pt)
+			depth, clipped = r.getCarvingDepthAt(pt)
 			r.needMorePasses = r.needMorePasses || clipped
 			if depth < oldCarvingDepth {
 				discardPath = false
@@ -106,7 +106,7 @@ func (r *carvingRun) doOnePass(delta float64) {
 				pt = r.endPoint
 			}
 
-			depth, clipped = r.getCarvingDepthAt(&pt)
+			depth, clipped = r.getCarvingDepthAt(pt)
 			r.needMorePasses = r.needMorePasses || clipped
 			if depth < oldCarvingDepth {
 				discardPath = false
@@ -119,7 +119,7 @@ func (r *carvingRun) doOnePass(delta float64) {
 		} else {
 			stepVec := r.step.Scale(float64(s) * delta)
 			pt := origin.Add(stepVec)
-			depth, clipped = r.getCarvingDepthAt(&pt)
+			depth, clipped = r.getCarvingDepthAt(pt)
 			r.needMorePasses = r.needMorePasses || clipped
 			if depth < oldCarvingDepth {
 				discardPath = false
@@ -132,7 +132,7 @@ func (r *carvingRun) doOnePass(delta float64) {
 
 // getCarvingDepthAt samples and returns the carving depth at the given location. This
 // function takes into account whether carving-at-full-depth is enabled.
-func (r *carvingRun) getCarvingDepthAt(q *geom.Pt2) (depth float64, clipped bool) {
+func (r *carvingRun) getCarvingDepthAt(q geom.Pt2) (depth float64, clipped bool) {
 	s := r.sampler.At(q)
 	d := (1-s)*r.blackCarvingDepth + s*r.whiteCarvingDepth
 

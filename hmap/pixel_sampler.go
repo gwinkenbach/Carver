@@ -61,7 +61,7 @@ func (p *pixelDepthSampler) GetNumSamplesFromY0ToY1(y0, y1 float64) int {
 	return int(l.Len())
 }
 
-func (p *pixelDepthSampler) At(q *geom.Pt2) float64 {
+func (p *pixelDepthSampler) At(q geom.Pt2) float64 {
 	q1 := q.Xform(&p.matToPixelXform)
 
 	y := int(math.Max(0, q1.Y))

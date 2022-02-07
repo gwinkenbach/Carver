@@ -41,7 +41,7 @@ func new4x4Sampler(xWeight, yWeight float64) *fourByFourSampler {
 	return s
 }
 
-func (s *fourByFourSampler) At(p *geom.Pt2) float64 {
+func (s *fourByFourSampler) At(p geom.Pt2) float64 {
 	p.X = math.Max(xMin, math.Min(xMax, p.X))
 	p.Y = math.Max(yMin, math.Min(yMax, p.Y))
 	i := int((numSamples - 1) * (p.X - xMin) / (xMax - xMin))

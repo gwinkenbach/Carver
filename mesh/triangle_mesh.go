@@ -343,7 +343,7 @@ func (t *TriangleMesh) populateVerticesForRow(
 	for i := range t.x {
 		x := t.x[i]
 		uv := geom.NewPt2(x, y)
-		z := sampler.At(&uv)
+		z := sampler.At(uv)
 		z = (1.0-z)*zBlack + z*zWhite
 		t.rows[rowIndex].z[i] = z
 	}

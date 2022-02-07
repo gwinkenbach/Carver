@@ -51,7 +51,7 @@ func (v Vec3) Norm() Vec3 {
 }
 
 // LenSq returns the length of vector v squared.
-func (v *Vec3) LenSq() float64 {
+func (v Vec3) LenSq() float64 {
 	return v.X*v.X + v.Y*v.Y + v.Z*v.Z
 }
 
