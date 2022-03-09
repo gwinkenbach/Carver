@@ -2,6 +2,7 @@ package mesh
 
 import (
 	"log"
+	"math"
 
 	"alvin.com/GoCarver/geom"
 	"alvin.com/GoCarver/hmap"
@@ -24,9 +25,10 @@ type gridRow struct {
 // TriangleMesh is a regular NxM triangle mesh representing the height map built from
 // a scalar height map (interface codeSampler).
 type TriangleMesh struct {
-	xyBox Footprint // The mesh footprint.
-	rows  []gridRow // Rows along the y-axis.
-	x     []float64 // X-coordinate for N+1 vertices along the x-axis.
+	xyBox      Footprint // The mesh footprint.
+	zMin, zMax float64   // Z extents
+	rows       []gridRow // Rows along the y-axis.
+	x          []float64 // X-coordinate for N+1 vertices along the x-axis.
 }
 
 // triangleArray implements interface TriangleIterator
@@ -54,7 +56,16 @@ func NewTriangleMesh(
 	mesh.xyBox = NewFootprint(pMin, pMax)
 	mesh.buildMesh(zBlack, zWhite, sampler)
 
+	mesh.zMin = math.Min(zBlack, zWhite)
+	mesh.zMax = math.Max(zBlack, zWhite)
+
 	return mesh
+}
+
+// GetZExtents returns the mesh z-extents.
+func (t *TriangleMesh) GetZExtents() (zMin, zMax float64) {
+	zMin, zMax = t.zMin, t.zMax
+	return
 }
 
 // GetNumTriangles returns the number of triangles in the mesh as pair of numbers (nX, nY)
