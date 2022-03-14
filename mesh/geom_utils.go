@@ -130,8 +130,6 @@ func dropPointPToDistanceRFromLine(
 	v := p.Sub(q)
 	l := w.LenSq()
 
-	// fmt.Printf("\nv = %v, w = %v, l = %f\n", v, w, l)
-
 	if math.Abs(l) < 1e-6 {
 		log.Fatalln("Can't define a line with a 0-length vector")
 		return false, 0
@@ -140,31 +138,23 @@ func dropPointPToDistanceRFromLine(
 	m := v.Dot(w) / l
 	s := w.Z / l
 
-	k_x := v.X - w.X*m // v.X * (1 - w.X*w.X/l)
+	k_x := v.X - w.X*m
 	k_y := v.Y - w.Y*m
 	k_z := v.Z - w.Z*m
-
-	// fmt.Printf("kx, ky, kz = %4f, %4f, %4f\n", k_x, k_y, k_z)
 
 	t_x := -s * w.X
 	t_y := -s * w.Y
 	t_z := 1.0 - s*w.Z
 
-	// fmt.Printf("tz = %4f\n", t_z)
-
 	a := t_x*t_x + t_y*t_y + t_z*t_z
 	b := 2.0 * (t_x*k_x + t_y*k_y + t_z*k_z)
 	c := k_x*k_x + k_y*k_y + k_z*k_z - r*r
 
-	// fmt.Printf("a = %4f, b = %4f, c = %4f\n", a, b, c)
-
 	D := b*b - 4*a*c
 	if D < 0 {
-		// fmt.Printf("D = %4f\n", D)
 		return false, 0
 	}
 	if math.Abs(a) < 1e-6 {
-		// fmt.Printf("a == 0\n")
 		return false, 0
 	}
 
@@ -172,8 +162,6 @@ func dropPointPToDistanceRFromLine(
 	D = math.Sqrt(D)
 	lambda1 := (-b + D) * den
 	lambda2 := (-b - D) * den
-
-	// fmt.Printf("lambda1,2 = %4f, %4f\n", lambda1, lambda2)
 
 	z1 := p.Z + lambda1 // a.k.a z-coord. for p + lambda n
 	z2 := p.Z + lambda2
