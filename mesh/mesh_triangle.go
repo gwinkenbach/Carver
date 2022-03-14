@@ -1,6 +1,8 @@
 package mesh
 
-import "alvin.com/GoCarver/geom"
+import (
+	"alvin.com/GoCarver/geom"
+)
 
 // Triangle is a generic interface for a triangle in the mesh.
 type Triangle interface {
@@ -27,6 +29,7 @@ func (m *meshTriangle) Vertex(i int) geom.Pt3 {
 	}
 }
 
+// Return the triangle's unit normal vector.
 func (m *meshTriangle) UnitNormal() geom.Vec3 {
 	return m.normal
 }
