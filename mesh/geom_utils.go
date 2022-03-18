@@ -130,7 +130,7 @@ func dropPointPToDistanceRFromLine(
 	v := p.Sub(q)
 	l := w.LenSq()
 
-	if math.Abs(l) < 1e-6 {
+	if math.Abs(l) < 1e-12 {
 		log.Fatalln("Can't define a line with a 0-length vector")
 		return false, 0
 	}
