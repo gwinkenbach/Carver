@@ -188,6 +188,8 @@ func (t *TriangleMesh) GetTrianglesUnderFootprint(f Footprint) TriangleIterator 
 			ta.triangles[n].vertices[1] = geom.NewPt3(t.x[ic+1], row1.y, row1.z[ic+1])
 			ta.triangles[n].vertices[2] = geom.NewPt3(t.x[ic+1], row0.y, row0.z[ic+1])
 			ta.triangles[n].normal = row0.normals[2*ic+1]
+
+			n++
 		}
 	}
 
@@ -195,7 +197,7 @@ func (t *TriangleMesh) GetTrianglesUnderFootprint(f Footprint) TriangleIterator 
 }
 
 // Find the rows that overlap with the given footprint. Returns indices iMinRow, iMaxRow
-// such that the footprint fits entirely with the y-coordinates of each row. Returns
+// such that the footprint fits entirely within the y-coordinates of each row. Returns
 // iMinRow == iMaxRow == -1 if the footprint doesn't overlap the mesh at all.
 func (t *TriangleMesh) findRowsForFootprint(f Footprint) (iMinRow, iMaxRow int) {
 	// Check for empty mesh.
