@@ -10,20 +10,25 @@ import (
 	"alvin.com/GoCarver/fui"
 	"alvin.com/GoCarver/geom"
 	"alvin.com/GoCarver/hmap"
+	"alvin.com/GoCarver/mesh"
 	"alvin.com/GoCarver/util"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 )
 
 type Controller struct {
-	uiManager  *UIManager
-	model      *Model
-	mainWindow fyne.Window
+	uiManager      *UIManager
+	model          *Model
+	mainWindow     fyne.Window
+	useMeshSampler bool
 }
 
 func NewController(m *Model) *Controller {
 	c := &Controller{
-		model: m,
+		model:          m,
+		useMeshSampler: true,
 	}
 
 	return c
@@ -149,12 +154,18 @@ func (c *Controller) doRunCarver() {
 	maxStepDown := c.model.GetFloat32(MaxStepDownTag)
 	mode := carverModeFromModelCarvingMode(c.model.GetChoice(CarvDirectionTag))
 	carver.ConfigureCarvingProfile(
-		c.getCarvingSampler(materialDim, carvingAreaDim, carvingOrigin),
+		c.getCarvingSampler(materialDim, carvingAreaDim, carvingOrigin,
+			float64(topZ), float64(bottomZ), float64(toolDiameter)),
 		float64(topZ), float64(bottomZ),
 		stepOverFraction, float64(maxStepDown),
 		mode)
 
+	title := "Generating carving code"
+	progress := c.showProgressDialog(title, filepath.Base(c.model.fromFilePath))
+
 	carver.Run()
+
+	progress.Hide()
 }
 
 func (c *Controller) doSaveModel() bool {
@@ -343,9 +354,9 @@ func (c *Controller) getGrblOutputFile(dir string) *os.File {
 }
 
 func (c *Controller) getCarvingSampler(
-	matDim geom.Size2,
-	carvDim geom.Size2,
-	carvOrigin geom.Pt2) hmap.ScalarGridSampler {
+	matDim, carvDim geom.Size2,
+	carvOrigin geom.Pt2,
+	topZ, bottomZ, toolDiameter float64) hmap.ScalarGridSampler {
 
 	heightMap := c.model.GetHeightMap()
 	imgMode := c.model.GetChoice(CarvDirectionTag)
@@ -358,7 +369,22 @@ func (c *Controller) getCarvingSampler(
 	imgGray := util.ImageToGrayImage(heightMap)
 	sampler := hmap.NewPixelDepthSampler(xform.GetMc2NicXform(), carvOrigin, carvDim, imgGray)
 
+	if c.useMeshSampler {
+		tmesh := mesh.NewTriangleMesh(carvOrigin, carvOrigin.Add(geom.NewVec2(carvDim.W, carvDim.H)),
+			bottomZ, topZ, sampler)
+		sampler = mesh.NewMeshSamplerWithBallCutter(tmesh, 0.5*toolDiameter)
+	}
+
 	return sampler
+}
+
+func (c *Controller) showProgressDialog(title, subtitle string) *widget.PopUp {
+	progress := widget.NewProgressBarInfinite()
+	popup := widget.NewModalPopUp(
+		container.NewVBox(widget.NewCard(title, subtitle, progress)),
+		c.mainWindow.Canvas())
+	popup.Show()
+	return popup
 }
 
 func carverToolTypeFromModelToolType(modelToolType int) int {
