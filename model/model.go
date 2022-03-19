@@ -20,13 +20,15 @@ type material struct {
 }
 
 type carving struct {
-	ToolDiameter       float32 `json:"tool_diameter"`
-	ToolType           int     `json:"tool_type"`
-	StepOverPercent    float32 `json:"step_over_percent"`
-	MaxStepDownSize    float32 `json:"max_step_down_size"`
-	HorizontalFeedRate float32 `json:"horizontal_feed_rate"`
-	VerticalFeedRate   float32 `json:"vertical_feed_rate"`
-	CarvingMode        int     `json:"carving_mode"`
+	ToolDiameter               float32 `json:"tool_diameter"`
+	ToolType                   int     `json:"tool_type"`
+	StepOverPercent            float32 `json:"step_over_percent"`
+	MaxStepDownSize            float32 `json:"max_step_down_size"`
+	HorizontalFeedRate         float32 `json:"horizontal_feed_rate"`
+	VerticalFeedRate           float32 `json:"vertical_feed_rate"`
+	CarvingMode                int     `json:"carving_mode"`
+	EnableFinishPass           bool    `json:"enable_finish_pass"`
+	FinishPassReductionPercent float32 `json:"finish_step_reduction_percent"`
 }
 
 type heightMap struct {
@@ -79,12 +81,14 @@ func NewModel() *Model {
 			},
 
 			Carving: carving{
-				ToolDiameter:       3.175, // millimeters
-				StepOverPercent:    40,    // Percent of tool diameter
-				MaxStepDownSize:    0.5,
-				HorizontalFeedRate: 500.0, // millimeters per minute
-				VerticalFeedRate:   300.0, // millimeters per minutes
-				CarvingMode:        CarvingModeAlongX,
+				ToolDiameter:               3.175, // millimeters
+				StepOverPercent:            40,    // Percent of tool diameter
+				MaxStepDownSize:            0.5,
+				HorizontalFeedRate:         500.0, // millimeters per minute
+				VerticalFeedRate:           300.0, // millimeters per minutes
+				CarvingMode:                CarvingModeAlongX,
+				EnableFinishPass:           false,
+				FinishPassReductionPercent: 50.0,
 			},
 		},
 	}
@@ -124,6 +128,8 @@ func (m *Model) GetFloat32(tag string) float32 {
 		return m.root.Carving.HorizontalFeedRate
 	case VertFeedRateTag:
 		return m.root.Carving.VerticalFeedRate
+	case FinishPassReductionTag:
+		return m.root.Carving.FinishPassReductionPercent
 	}
 
 	log.Fatalf("Model: GetFloat32: Invalid tag = %s", tag)
@@ -150,6 +156,8 @@ func (m *Model) GetBool(tag string) bool {
 		return m.root.HeightMap.MirrorX
 	case ImgMirrorYTag:
 		return m.root.HeightMap.MirrorY
+	case UseFinishPassTag:
+		return m.root.Carving.EnableFinishPass
 	}
 
 	log.Fatalf("Model: GetBool: Invalid tag = %s", tag)

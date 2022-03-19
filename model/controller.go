@@ -160,6 +160,10 @@ func (c *Controller) doRunCarver() {
 		stepOverFraction, float64(maxStepDown),
 		mode)
 
+	finishStepFraction := float64(c.model.GetFloat32(FinishPassReductionTag)) * 0.01
+	enableFinish := c.model.GetBool(UseFinishPassTag)
+	carver.ConfigureFinishingPass(enableFinish, finishStepFraction)
+
 	title := "Generating carving code"
 	progress := c.showProgressDialog(title, filepath.Base(c.model.fromFilePath))
 
@@ -278,6 +282,10 @@ func (c *Controller) doOnItemChanged(tag string) {
 		c.model.root.HeightMap.MirrorX = c.uiManager.GetUIItemBoolValue(tag)
 	case ImgMirrorYTag:
 		c.model.root.HeightMap.MirrorY = c.uiManager.GetUIItemBoolValue(tag)
+	case UseFinishPassTag:
+		c.model.root.Carving.EnableFinishPass = c.uiManager.GetUIItemBoolValue(tag)
+	case FinishPassReductionTag:
+		c.model.root.Carving.FinishPassReductionPercent = c.uiManager.GetUIItemFloatValue(tag)
 	default:
 		log.Fatalf("Controller: doOnItemChanged - unknown tag = %s", tag)
 		return
@@ -328,6 +336,10 @@ func (c *Controller) updateUIFromModel(tag string) {
 		c.uiManager.SetUIItemBoolValue(tag, c.model.root.HeightMap.MirrorX)
 	case ImgMirrorYTag:
 		c.uiManager.SetUIItemBoolValue(tag, c.model.root.HeightMap.MirrorY)
+	case UseFinishPassTag:
+		c.uiManager.SetUIItemBoolValue(tag, c.model.root.Carving.EnableFinishPass)
+	case FinishPassReductionTag:
+		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Carving.FinishPassReductionPercent)
 	default:
 		log.Fatalf("Controller: updateUIFromModel - unknown tag = %s", tag)
 		return

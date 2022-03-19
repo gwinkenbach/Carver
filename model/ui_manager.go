@@ -26,13 +26,15 @@ const (
 	CarvBlackDepthTag = "carv_black_depth_tag"
 	CarvWhiteDepthTag = "carv_white_depth_tag"
 
-	ToolDiamTag      = "tool_diam"
-	StepOverTag      = "step_over"
-	ToolTypeTag      = "tool_type"
-	MaxStepDownTag   = "max_step_down"
-	HorizFeedRateTag = "horiz_feed_rate"
-	VertFeedRateTag  = "vert_feed_rate"
-	CarvDirectionTag = "carv_direction"
+	ToolDiamTag            = "tool_diam"
+	StepOverTag            = "step_over"
+	ToolTypeTag            = "tool_type"
+	MaxStepDownTag         = "max_step_down"
+	HorizFeedRateTag       = "horiz_feed_rate"
+	VertFeedRateTag        = "vert_feed_rate"
+	CarvDirectionTag       = "carv_direction"
+	UseFinishPassTag       = "use_finishing_pass"
+	FinishPassReductionTag = "finish_pass_reduc"
 
 	ImgFillModeTag = "img_fill_mode"
 	ImgMirrorXTag  = "img_mirror_x"
@@ -60,7 +62,7 @@ var allUIItemTags = [...]string{
 	MatWidthTag, MatHeightTag, MatThicknessTag,
 	CarvWidthTag, CarvHeightTag, CarvOffsetXTag, CarvOffsetYTag, CarvBlackDepthTag, CarvWhiteDepthTag,
 	ToolDiamTag, StepOverTag, ToolTypeTag, MaxStepDownTag, HorizFeedRateTag, VertFeedRateTag,
-	CarvDirectionTag,
+	CarvDirectionTag, UseFinishPassTag, FinishPassReductionTag,
 	ImgFillModeTag, ImgMirrorXTag, ImgMirrorYTag}
 
 type UIManager struct {
@@ -187,6 +189,8 @@ func (ui *UIManager) buildCarvingPanel() {
 	cp.AddNumberEntry(PanelCarvingTag, HorizFeedRateTag, "Horizontal feed rate (mm/min)):", feedRateConfig())
 	cp.AddNumberEntry(PanelCarvingTag, VertFeedRateTag, "Vertical feed rate (mm/min)):", feedRateConfig())
 	cp.AddSelector(PanelCarvingTag, CarvDirectionTag, "Carving mode:", carvingDirectionChoices)
+	cp.AddCheckbox(PanelCarvingTag, UseFinishPassTag, "Enable finishing pass:")
+	cp.AddNumberEntry(PanelCarvingTag, FinishPassReductionTag, "Finishing step reduction (%):", finishingPassConfig())
 }
 
 func (ui *UIManager) buildHeightMapPanel() {
@@ -340,6 +344,15 @@ func feedRateConfig() fui.NumericalEditConfigConfig {
 	return fui.NumericalEditConfigConfig{
 		MinVal: 10,
 		MaxVal: 2000.0,
+		Format: "%.1f",
+		Regex:  NumberRegex,
+	}
+}
+
+func finishingPassConfig() fui.NumericalEditConfigConfig {
+	return fui.NumericalEditConfigConfig{
+		MinVal: 1.0,
+		MaxVal: 90.0,
 		Format: "%.1f",
 		Regex:  NumberRegex,
 	}

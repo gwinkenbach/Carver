@@ -41,6 +41,9 @@ type Carver struct {
 	horizFeedRate    float64
 	vertFeedRate     float64
 
+	enableFinishingPass       bool
+	finishingPassStepFraction float64
+
 	sampler hmap.ScalarGridSampler
 	output  io.Writer
 }
@@ -92,6 +95,18 @@ func (c *Carver) ConfigureCarvingProfile(
 	c.zWhite = topHeightMm - c.materialTopMm
 	c.zBlack = bottomHeightMm - c.materialTopMm
 	c.maxStepDown = maxStepDownSizeMm
+}
+
+// Configure the finishing pass. When enabled, the finishing pass is the very last carving pass
+// in either direction. It runs once at full depth with the step-over reduced to the given
+// fraction.
+func (c *Carver) ConfigureFinishingPass(enabled bool, stepOverFraction float64) {
+	if stepOverFraction >= 1.0 || stepOverFraction < 0.01 {
+		return
+	}
+
+	c.enableFinishingPass = enabled
+	c.finishingPassStepFraction = stepOverFraction
 }
 
 // Run is called to generate the carving code. It is ok to (re)configure the carver and
