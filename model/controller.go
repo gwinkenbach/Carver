@@ -1,6 +1,7 @@
 package model
 
 import (
+	"image"
 	"log"
 	"math"
 	"os"
@@ -16,6 +17,8 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+
+	"github.com/disintegration/imaging"
 )
 
 type Controller struct {
@@ -367,15 +370,14 @@ func (c *Controller) getCarvingSampler(
 	carvOrigin geom.Pt2,
 	topZ, bottomZ, toolDiameter float64) hmap.ScalarGridSampler {
 
-	heightMap := c.model.GetHeightMap()
+	imgGray := c.getHeightMapImageForSampler()
 	imgMode := c.model.GetChoice(CarvDirectionTag)
 
 	xform := geom.NewXformCache(
 		float32(matDim.W), float32(matDim.H),
 		float32(carvDim.W), float32(carvDim.H),
 		float32(carvOrigin.X), float32(carvOrigin.Y),
-		heightMap.Bounds().Dx(), heightMap.Bounds().Dy(), imgMode)
-	imgGray := util.ImageToGrayImage(heightMap)
+		imgGray.Bounds().Dx(), imgGray.Bounds().Dy(), imgMode)
 	sampler := hmap.NewPixelDepthSampler(xform.GetMc2NicXform(), carvOrigin, carvDim, imgGray)
 
 	if c.useMeshSampler {
@@ -385,6 +387,23 @@ func (c *Controller) getCarvingSampler(
 	}
 
 	return sampler
+}
+
+// Return a gray-scale image for the current model height map, mirroring along X and Y
+// as needed.
+func (c *Controller) getHeightMapImageForSampler() *image.Gray {
+	heightMap := c.model.GetHeightMap()
+	mirrorX := c.model.GetBool(ImgMirrorXTag)
+	mirrorY := c.model.GetBool(ImgMirrorYTag)
+	if mirrorX && mirrorY {
+		heightMap = imaging.Rotate180(heightMap)
+	} else if mirrorX {
+		heightMap = imaging.FlipH(heightMap)
+	} else if mirrorY {
+		heightMap = imaging.FlipV(heightMap)
+	}
+
+	return util.ImageToGrayImage(heightMap)
 }
 
 func (c *Controller) showProgressDialog(title, subtitle string) *widget.PopUp {
