@@ -19,8 +19,7 @@ const (
 )
 
 type modelIO struct {
-	model    *Model
-	filename string
+	model *Model
 }
 
 func newModelIO(m *Model) *modelIO {
@@ -71,7 +70,7 @@ func (mio *modelIO) readJSON(rc io.ReadCloser, numBytes uint64) error {
 func (mio *modelIO) readImage(rc io.ReadCloser, numBytes uint64) error {
 	img, _, err := image.Decode(rc)
 	if img == nil || err != nil {
-		return fmt.Errorf("Failed to read image from file")
+		return fmt.Errorf("failed to read image from file")
 	}
 
 	mio.model.root.HeightMap.Image = img
@@ -123,13 +122,13 @@ func (mio *modelIO) writeImage(w *zip.Writer) error {
 		buffer := new(bytes.Buffer)
 		err = png.Encode(buffer, img)
 		if err != nil {
-			return fmt.Errorf("Could not save image to png")
+			return fmt.Errorf("could not save image to png")
 		}
 
 		const bufferSize = 4096
 		bytesBuffer := make([]byte, bufferSize)
 		for {
-			n, err := buffer.Read(bytesBuffer)
+			n, _ := buffer.Read(bytesBuffer)
 			if n <= 0 {
 				break
 			}
