@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	ToolTypeBall = 1
-	ToolTypeFlat = 2
+	ToolTypeBallPoint = 1
+	ToolTypeFlat      = 2
 
 	CarveModeXOnly  = 100
 	CarveModeYOnly  = 101
@@ -121,12 +121,28 @@ func (c *Carver) Run() {
 	gen.endJob()
 }
 
+// Generate carving runs along the x-direction. This will generate the main carving passes as
+// well as the optional finishing pass if carving only takes place along X.
 func (c *Carver) carveAlongX(gen codeGenerator) {
 	if c.carveMode != CarveModeXOnly && c.carveMode != CarveModeXThenY {
 		return
 	}
 
-	runs := c.setupXRuns(gen)
+	c.genCarvingRunsAlongX(c.stepOverFraction, false /* not full depth */, gen)
+	if c.needFinishingPassAlongX() {
+		c.genCarvingRunsAlongX(c.finishingPassStepFraction, true /* full depth */, gen)
+	}
+}
+
+// Generating a series of carving path in the x-direction to fully cover the entire
+// carving area for given the step-over fraction. Usually, each run consists of several
+// passes, determined by the max step-down size. However, when <carveAtFullDepth> is true,
+// a single pass at full depth  along each run. Carving at full depth should only be used
+// for the very last pass.
+func (c *Carver) genCarvingRunsAlongX(
+	stepOverFraction float64, carveAtFullDepth bool, gen codeGenerator) {
+
+	runs := c.setupXRuns(stepOverFraction, gen, carveAtFullDepth)
 	stepDir := 1.0
 	iRun := -1
 	for {
@@ -150,12 +166,28 @@ func (c *Carver) carveAlongX(gen codeGenerator) {
 	}
 }
 
+// Generate carving runs along the y-direction. This will generate the main carving passes as
+// well as the optional finishing pass if carving only takes place along X.
 func (c *Carver) carveAlongY(gen codeGenerator) {
 	if c.carveMode != CarveModeYOnly && c.carveMode != CarveModeXThenY {
 		return
 	}
 
-	runs := c.setupYRuns(gen, c.carveMode == CarveModeXThenY)
+	c.genCarvingRunsAlongY(c.stepOverFraction, c.carveMode == CarveModeXThenY, gen)
+	if c.needFinishingPassAlongY() {
+		c.genCarvingRunsAlongY(c.finishingPassStepFraction, true /* full depth */, gen)
+	}
+}
+
+// Generating a series of carving path in the y-direction to fully cover the entire
+// carving area for given the step-over fraction. Usually, each run consists of several
+// passes, determined by the max step-down size. However, when <carveAtFullDepth> is true,
+// a single pass at full depth  along each run. Carving at full depth should only be used
+// for the very last pass.
+func (c *Carver) genCarvingRunsAlongY(
+	stepOverFraction float64, carveAtFullDepth bool, gen codeGenerator) {
+
+	runs := c.setupYRuns(stepOverFraction, gen, carveAtFullDepth)
 	stepDir := 1.0
 	iRun := -1
 	for {
@@ -206,8 +238,11 @@ func (c *Carver) genMoveToNextRun(fromRun, toRun int) {
 	// TODO: for now grbl generator handles moving from path to path adequately.
 }
 
-func (c *Carver) setupXRuns(gen codeGenerator) []oneRun {
-	numRuns := c.getNumRunsNeeded(c.carvingDimMm.H)
+// Setup the carving runs in the x-direction. Returns an array of x-carving-runs.
+func (c *Carver) setupXRuns(
+	stepOverFraction float64, gen codeGenerator, carveAtFulldepth bool) []oneRun {
+
+	numRuns := c.getNumRunsNeeded(stepOverFraction, c.carvingDimMm.H)
 	if numRuns == 0 {
 		return nil
 	}
@@ -232,14 +267,22 @@ func (c *Carver) setupXRuns(gen codeGenerator) []oneRun {
 			c.carvingBottomLeft.X+0.5*c.toolDiameterMm,
 			y,
 			c.zWhite, c.zBlack, c.maxStepDown)
+
+		if carveAtFulldepth {
+			run.setEnableCarvingAtFulldepth(true)
+		}
+
 		runs[i] = run
 	}
 
 	return runs
 }
 
-func (c *Carver) setupYRuns(gen codeGenerator, carveAtFulldepth bool) []oneRun {
-	numRuns := c.getNumRunsNeeded(c.carvingDimMm.W)
+// Setup the carving runs in the y-direction. Returns an array of y-carving-runs.
+func (c *Carver) setupYRuns(
+	stepOverFraction float64, gen codeGenerator, carveAtFulldepth bool) []oneRun {
+
+	numRuns := c.getNumRunsNeeded(stepOverFraction, c.carvingDimMm.W)
 	if numRuns == 0 {
 		return nil
 	}
@@ -278,11 +321,11 @@ func (c *Carver) setupYRuns(gen codeGenerator, carveAtFulldepth bool) []oneRun {
 // Return the number of runs (carving paths) needed to cover distToCover. There is always runs
 // just inside both sides of the carving area. Runs are added in the middle to cover the
 // entire carving area.
-func (c *Carver) getNumRunsNeeded(distToCover float64) int {
+func (c *Carver) getNumRunsNeeded(stepOverFraction, distToCover float64) int {
 	// The first run has a fraction of cutting thickness that is nor shared with other runs.
 	// The last run has a cutting path that is not shared. Together, they are exactly one tool
 	// diameter in thickness. The rest of the carving distance is divided by the step size.
-	cutSize := c.toolDiameterMm * c.stepOverFraction
+	cutSize := c.toolDiameterMm * stepOverFraction
 	numSteps := (distToCover-c.toolDiameterMm)/cutSize - 0.001 + 1.0
 	if numSteps < 0 {
 		numSteps = 0
@@ -293,4 +336,24 @@ func (c *Carver) getNumRunsNeeded(distToCover float64) int {
 	// fmt.Printf("H=%f, step size = %f, num steps = %f or %d\n", distToCover, stepSize, numSteps, count)
 
 	return count
+}
+
+// Returns whether a finishing pass is needed in the x-direction.
+func (c *Carver) needFinishingPassAlongX() bool {
+	// Finishing must be enabled
+	return c.enableFinishingPass &&
+		// We must not be carving along Y next
+		c.carveMode == CarveModeXOnly &&
+		// There's no point in finishing with the same step-over fraction
+		c.finishingPassStepFraction != c.stepOverFraction
+}
+
+// Returns whether a finishing pass is needed in the y-direction.
+func (c *Carver) needFinishingPassAlongY() bool {
+	// Finishing must be enabled
+	return c.enableFinishingPass &&
+		// We must be carving along Y next
+		c.carveMode != CarveModeXOnly &&
+		// There's no point in finishing with the same step-over fraction
+		c.finishingPassStepFraction != c.stepOverFraction
 }

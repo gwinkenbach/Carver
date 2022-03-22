@@ -65,13 +65,10 @@ func (c *Controller) DoMenuChoice(menuTag string) {
 		break
 	case MenuOpenModelTag:
 		c.doOpenModel()
-		break
 	case MenuSaveModelTag:
 		c.doSaveModel()
-		break
 	case MenuSaveModelAsTag:
 		c.doSaveModelAs()
-		break
 	case MenuGenGrblTag:
 		c.doRunCarver()
 	default:
@@ -353,7 +350,7 @@ func (c *Controller) updateMenuItems() {
 
 func (c *Controller) getGrblOutputFile(dir string) *os.File {
 	dlg := fui.NewDialog("Export GRBL Code")
-	filename, err := dlg.SaveToGrblFile(dir)
+	filename, _ := dlg.SaveToGrblFile(dir)
 
 	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
@@ -402,7 +399,7 @@ func (c *Controller) showProgressDialog(title, subtitle string) *widget.PopUp {
 func carverToolTypeFromModelToolType(modelToolType int) int {
 	switch modelToolType {
 	case ToolTypeBallNose:
-		return carv.ToolTypeBall
+		return carv.ToolTypeBallPoint
 	case ToolTypeStraight:
 		return carv.ToolTypeFlat
 	default:
