@@ -362,6 +362,7 @@ func (c *Controller) getGrblOutputFile(dir string) *os.File {
 		return nil
 	}
 
+	f.Truncate(0) // Just in case we're overwriting an existing file.
 	return f
 }
 
