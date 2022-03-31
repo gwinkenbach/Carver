@@ -260,6 +260,28 @@ func (cp *ControlPanel) AddCheckbox(
 	}
 }
 
+func (cp *ControlPanel) AddSeparator(
+	addToGroupTag string,
+	label string,
+	boldLabel bool) {
+
+	// Find the container for the host group.
+	tabItem, ok := cp.groups[addToGroupTag]
+	if !ok {
+		fyne.LogError("Unknown group tag", nil)
+		return
+	}
+	panel := tabItem.Content.(*fyne.Container)
+	w := layout.NewSpacer()
+	if panel != nil {
+		panel.Add(widget.NewLabelWithStyle(
+			label,
+			fyne.TextAlignLeading,
+			fyne.TextStyle{Bold: boldLabel}))
+		panel.Add(w)
+	}
+}
+
 func (cp *ControlPanel) getRoot() fyne.CanvasObject {
 	return cp.root
 }
