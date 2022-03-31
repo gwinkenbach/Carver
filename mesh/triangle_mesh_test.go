@@ -29,6 +29,7 @@ var yVal = [numSamples]float64{0, 0.25, 0.5, 0.75, 1.0}
 type fourByFourSampler struct {
 	xWeight float64
 	yWeight float64
+	invert  bool
 }
 
 var _ hmap.ScalarGridSampler = (*fourByFourSampler)(nil)
@@ -46,7 +47,15 @@ func (s *fourByFourSampler) At(p geom.Pt2) float64 {
 	p.Y = math.Max(yMin, math.Min(yMax, p.Y))
 	i := int((numSamples - 1) * (p.X - xMin) / (xMax - xMin))
 	j := int((numSamples - 1) * (p.Y - yMin) / (yMax - yMin))
-	return ((1.0 - s.xWeight) + s.xWeight*xVal[i]) * ((1.0 - s.yWeight) + s.yWeight*yVal[j])
+	val := ((1.0 - s.xWeight) + s.xWeight*xVal[i]) * ((1.0 - s.yWeight) + s.yWeight*yVal[j])
+	if s.invert {
+		val = 1.0 - val
+	}
+	return val
+}
+
+func (s *fourByFourSampler) EnableInvertImage(enable bool) {
+	s.invert = enable
 }
 
 func (s *fourByFourSampler) GetNumSamplesFromX0ToX1(x0, x1 float64) int {

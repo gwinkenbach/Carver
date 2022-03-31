@@ -26,6 +26,8 @@ func (f *FiftyPercentTestSampler) At(q geom.Pt2) float64 {
 	return 0.5
 }
 
+func (f *FiftyPercentTestSampler) EnableInvertImage(enable bool) {}
+
 // ConstantDepthTestSampler is a constant-depth sampler that returns a preset depth.
 type ConstantDepthTestSampler struct {
 	depth float64
@@ -50,3 +52,5 @@ func (s *ConstantDepthTestSampler) GetNumSamplesFromY0ToY1(y0, y1 float64) int {
 func (s *ConstantDepthTestSampler) At(q geom.Pt2) float64 {
 	return s.depth
 }
+
+func (s *ConstantDepthTestSampler) EnableInvertImage(enable bool) {}

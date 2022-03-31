@@ -153,8 +153,15 @@ func (c *Controller) doRunCarver() {
 	stepOverFraction = math.Max(0.05, math.Min(1.0, stepOverFraction))
 	maxStepDown := c.model.GetFloat32(MaxStepDownTag)
 	mode := carverModeFromModelCarvingMode(c.model.GetChoice(CarvDirectionTag))
+
+	invertImage := false
+	if bottomZ > topZ {
+		invertImage = true
+		bottomZ, topZ = topZ, bottomZ
+	}
+
 	carver.ConfigureCarvingProfile(
-		c.getCarvingSampler(materialDim, carvingAreaDim, carvingOrigin,
+		c.getCarvingSampler(materialDim, carvingAreaDim, carvingOrigin, invertImage,
 			float64(topZ), float64(bottomZ), float64(toolDiameter)),
 		float64(topZ), float64(bottomZ),
 		stepOverFraction, float64(maxStepDown),
@@ -369,6 +376,7 @@ func (c *Controller) getGrblOutputFile(dir string) *os.File {
 func (c *Controller) getCarvingSampler(
 	matDim, carvDim geom.Size2,
 	carvOrigin geom.Pt2,
+	invertImage bool,
 	topZ, bottomZ, toolDiameter float64) hmap.ScalarGridSampler {
 
 	imgGray := c.getHeightMapImageForSampler()
@@ -380,6 +388,7 @@ func (c *Controller) getCarvingSampler(
 		float32(carvOrigin.X), float32(carvOrigin.Y),
 		imgGray.Bounds().Dx(), imgGray.Bounds().Dy(), imgMode)
 	sampler := hmap.NewPixelDepthSampler(xform.GetMc2NicXform(), carvOrigin, carvDim, imgGray)
+	sampler.EnableInvertImage(invertImage)
 
 	if c.useMeshSampler {
 		tmesh := mesh.NewTriangleMesh(carvOrigin, carvOrigin.Add(geom.NewVec2(carvDim.W, carvDim.H)),

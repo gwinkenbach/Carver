@@ -120,6 +120,10 @@ func (ms *MeshSampler) GetNumSamplesFromY0ToY1(y0, y1 float64) int {
 	return numTrg.GetTriangleCount() / 2
 }
 
+func (ms *MeshSampler) EnableInvertImage(enable bool) {
+	// No-op. Invert sampler that is used to construct the mesh instead.
+}
+
 func (ms *MeshSampler) At(p geom.Pt2) float64 {
 	if ms.useBallPointCutter {
 		return ms.sampleBallPointToolAt(p)

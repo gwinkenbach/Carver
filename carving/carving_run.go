@@ -165,8 +165,8 @@ func (r *carvingRun) sanitize() {
 		r.whiteCarvingDepth = 0
 	}
 
-	if r.blackCarvingDepth > r.whiteCarvingDepth {
-		r.blackCarvingDepth = r.whiteCarvingDepth
+	if r.blackCarvingDepth > 0 {
+		r.blackCarvingDepth = 0
 	}
 
 	if r.depthStepDown < 0 {

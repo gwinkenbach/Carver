@@ -13,9 +13,10 @@ const (
 )
 
 type pixelDepthSampler struct {
-	img       *image.Gray
-	imgWidth  int
-	imgHeight int
+	img         *image.Gray
+	imgWidth    int
+	imgHeight   int
+	invertImage bool
 
 	carvingAreaOrigin geom.Pt2
 	carvingAreaDim    geom.Size2
@@ -61,6 +62,10 @@ func (p *pixelDepthSampler) GetNumSamplesFromY0ToY1(y0, y1 float64) int {
 	return int(l.Len())
 }
 
+func (p *pixelDepthSampler) EnableInvertImage(enable bool) {
+	p.invertImage = enable
+}
+
 func (p *pixelDepthSampler) At(q geom.Pt2) float64 {
 	q1 := q.Xform(&p.matToPixelXform)
 
@@ -76,5 +81,9 @@ func (p *pixelDepthSampler) At(q geom.Pt2) float64 {
 
 	pixVal := p.img.At(x, y)
 	grayVal := pixVal.(color.Gray)
-	return float64(grayVal.Y) * uint16Weight
+	val := float64(grayVal.Y) * uint16Weight
+	if p.invertImage {
+		val = 1.0 - val
+	}
+	return val
 }
