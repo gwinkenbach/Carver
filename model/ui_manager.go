@@ -167,9 +167,11 @@ func (ui *UIManager) buildMaterialPanel() {
 	cp := ui.uiRoot.GetControlPanel()
 	cp.AddGroup(PanelMaterialTag, "Material")
 
+	cp.AddSeparator(PanelMaterialTag, "Material area:", true)
 	cp.AddNumberEntry(PanelMaterialTag, MatWidthTag, "Material width (mm):", materialDimensionsConfig())
 	cp.AddNumberEntry(PanelMaterialTag, MatHeightTag, "Material height (mm):", materialDimensionsConfig())
 	cp.AddNumberEntry(PanelMaterialTag, MatThicknessTag, "Material thickness (mm):", materialThicknessConfig())
+	cp.AddSeparator(PanelMaterialTag, "Carving area:", true)
 	cp.AddNumberEntry(PanelMaterialTag, CarvWidthTag, "Carving area width (mm):", materialDimensionsConfig())
 	cp.AddNumberEntry(PanelMaterialTag, CarvHeightTag, "Carving area height (mm):", materialDimensionsConfig())
 	cp.AddNumberEntry(PanelMaterialTag, CarvOffsetXTag, "Carving offset X (mm):", carvingOffsetConfig())
@@ -182,13 +184,16 @@ func (ui *UIManager) buildCarvingPanel() {
 	cp := ui.uiRoot.GetControlPanel()
 	cp.AddGroup(PanelCarvingTag, "Carving")
 
+	cp.AddSeparator(PanelCarvingTag, "Tool:", true)
 	cp.AddNumberEntry(PanelCarvingTag, ToolDiamTag, "Tool diameter (mm):", toolDiameterConfig())
 	cp.AddNumberEntry(PanelCarvingTag, StepOverTag, "Tool step over (%):", toolStepOverConfig())
 	cp.AddSelector(PanelCarvingTag, ToolTypeTag, "Tool type:", toolTypeChoices)
+	cp.AddSeparator(PanelCarvingTag, "Carving:", true)
 	cp.AddNumberEntry(PanelCarvingTag, MaxStepDownTag, "Max step down (mm)):", stepDownSizeConfig())
 	cp.AddNumberEntry(PanelCarvingTag, HorizFeedRateTag, "Horizontal feed rate (mm/min)):", feedRateConfig())
 	cp.AddNumberEntry(PanelCarvingTag, VertFeedRateTag, "Vertical feed rate (mm/min)):", feedRateConfig())
 	cp.AddSelector(PanelCarvingTag, CarvDirectionTag, "Carving mode:", carvingDirectionChoices)
+	cp.AddSeparator(PanelCarvingTag, "Optional finish pass:", true)
 	cp.AddCheckbox(PanelCarvingTag, UseFinishPassTag, "Enable finishing pass:")
 	cp.AddNumberEntry(PanelCarvingTag, FinishPassReductionTag, "Finishing step reduction (%):", finishingPassConfig())
 }
