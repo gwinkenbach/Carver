@@ -26,15 +26,17 @@ const (
 	CarvBlackDepthTag = "carv_black_depth_tag"
 	CarvWhiteDepthTag = "carv_white_depth_tag"
 
-	ToolDiamTag            = "tool_diam"
-	StepOverTag            = "step_over"
-	ToolTypeTag            = "tool_type"
-	MaxStepDownTag         = "max_step_down"
-	HorizFeedRateTag       = "horiz_feed_rate"
-	VertFeedRateTag        = "vert_feed_rate"
-	CarvDirectionTag       = "carv_direction"
-	UseFinishPassTag       = "use_finishing_pass"
-	FinishPassReductionTag = "finish_pass_reduc"
+	ToolDiamTag                = "tool_diam"
+	StepOverTag                = "step_over"
+	ToolTypeTag                = "tool_type"
+	MaxStepDownTag             = "max_step_down"
+	HorizFeedRateTag           = "horiz_feed_rate"
+	VertFeedRateTag            = "vert_feed_rate"
+	CarvDirectionTag           = "carv_direction"
+	UseFinishPassTag           = "use_finishing_pass"
+	FinishPassReductionTag     = "finish_pass_reduc"
+	FinishPassModeTag          = "finish_pass_mode"
+	FinishPassHorizFeedRateTag = "finish_pass_horiz_feed"
 
 	ImgFillModeTag = "img_fill_mode"
 	ImgMirrorXTag  = "img_mirror_x"
@@ -52,6 +54,8 @@ const (
 // Choice strings.
 var toolTypeChoices = []string{"Ball nose", "Straight"}
 var carvingDirectionChoices = []string{"Along X", "Along Y", "First along X then along Y"}
+var finishPassModeChoices = []string{
+	"First direction only", "Last direction only", "All directions"}
 var imageFillModeChoices = []string{"Fill", "Fit", "Crop"}
 
 // Map image mode index from UI item to string mode used by Image Panel.
@@ -62,8 +66,8 @@ var allUIItemTags = [...]string{
 	MatWidthTag, MatHeightTag, MatThicknessTag,
 	CarvWidthTag, CarvHeightTag, CarvOffsetXTag, CarvOffsetYTag, CarvBlackDepthTag, CarvWhiteDepthTag,
 	ToolDiamTag, StepOverTag, ToolTypeTag, MaxStepDownTag, HorizFeedRateTag, VertFeedRateTag,
-	CarvDirectionTag, UseFinishPassTag, FinishPassReductionTag,
-	ImgFillModeTag, ImgMirrorXTag, ImgMirrorYTag}
+	CarvDirectionTag, UseFinishPassTag, FinishPassReductionTag, FinishPassModeTag,
+	FinishPassHorizFeedRateTag, ImgFillModeTag, ImgMirrorXTag, ImgMirrorYTag}
 
 type UIManager struct {
 	uiRoot *fui.MainLayout
@@ -196,6 +200,8 @@ func (ui *UIManager) buildCarvingPanel() {
 	cp.AddSeparator(PanelCarvingTag, "Optional finish pass:", true)
 	cp.AddCheckbox(PanelCarvingTag, UseFinishPassTag, "Enable finishing pass:")
 	cp.AddNumberEntry(PanelCarvingTag, FinishPassReductionTag, "Finishing step reduction (%):", finishingPassConfig())
+	cp.AddSelector(PanelCarvingTag, FinishPassModeTag, "Finish mode:", finishPassModeChoices)
+	cp.AddNumberEntry(PanelCarvingTag, FinishPassHorizFeedRateTag, "Finish pass horiz feed rate (mm/min)):", feedRateConfig())
 }
 
 func (ui *UIManager) buildHeightMapPanel() {

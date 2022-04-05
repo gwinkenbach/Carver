@@ -20,15 +20,18 @@ type material struct {
 }
 
 type carving struct {
-	ToolDiameter               float32 `json:"tool_diameter"`
-	ToolType                   int     `json:"tool_type"`
-	StepOverPercent            float32 `json:"step_over_percent"`
-	MaxStepDownSize            float32 `json:"max_step_down_size"`
-	HorizontalFeedRate         float32 `json:"horizontal_feed_rate"`
-	VerticalFeedRate           float32 `json:"vertical_feed_rate"`
-	CarvingMode                int     `json:"carving_mode"`
+	ToolDiameter       float32 `json:"tool_diameter"`
+	ToolType           int     `json:"tool_type"`
+	StepOverPercent    float32 `json:"step_over_percent"`
+	MaxStepDownSize    float32 `json:"max_step_down_size"`
+	HorizontalFeedRate float32 `json:"horizontal_feed_rate"`
+	VerticalFeedRate   float32 `json:"vertical_feed_rate"`
+	CarvingMode        int     `json:"carving_mode"`
+
 	EnableFinishPass           bool    `json:"enable_finish_pass"`
 	FinishPassReductionPercent float32 `json:"finish_step_reduction_percent"`
+	FinishMode                 int     `json:"finish_mode"`
+	FinishHorizFeedRate        float32 `json:"finish_horiz__feed_rate"`
 }
 
 type heightMap struct {
@@ -52,6 +55,10 @@ const (
 	CarvingModeAlongX      = 0
 	CarvingModeAlongY      = 1
 	CarvingModeAlongXThenY = 2
+
+	FinishModeFirstDirectionOnly = 0
+	FinishModeLastDirectionOnly  = 1
+	FinishModeInAllDirections    = 2
 
 	ImageModeFill = geom.ImageModeFill // Stretch image to fill viewport
 	ImageModeFit  = geom.ImageModeFit  // Whole image fits in viewport, keep aspect ratio
@@ -89,6 +96,8 @@ func NewModel() *Model {
 				CarvingMode:                CarvingModeAlongX,
 				EnableFinishPass:           false,
 				FinishPassReductionPercent: 50.0,
+				FinishMode:                 FinishModeFirstDirectionOnly,
+				FinishHorizFeedRate:        750.0, // millimeters per minute,
 			},
 		},
 	}
@@ -130,6 +139,8 @@ func (m *Model) GetFloat32(tag string) float32 {
 		return m.root.Carving.VerticalFeedRate
 	case FinishPassReductionTag:
 		return m.root.Carving.FinishPassReductionPercent
+	case FinishPassHorizFeedRateTag:
+		return m.root.Carving.FinishHorizFeedRate
 	}
 
 	log.Fatalf("Model: GetFloat32: Invalid tag = %s", tag)
@@ -144,6 +155,8 @@ func (m *Model) GetChoice(tag string) int {
 		return m.root.HeightMap.ImageMode
 	case ToolTypeTag:
 		return m.root.Carving.ToolType
+	case FinishPassModeTag:
+		return m.root.Carving.FinishMode
 	}
 
 	log.Fatalf("Model: GetChoice: Invalid tag = %s", tag)

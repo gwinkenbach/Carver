@@ -152,7 +152,7 @@ func (c *Controller) doRunCarver() {
 	stepOverFraction := float64(c.model.GetFloat32(StepOverTag)) * 0.01
 	stepOverFraction = math.Max(0.05, math.Min(1.0, stepOverFraction))
 	maxStepDown := c.model.GetFloat32(MaxStepDownTag)
-	mode := carverModeFromModelCarvingMode(c.model.GetChoice(CarvDirectionTag))
+	carvingMode := carverModeFromModelCarvingMode(c.model.GetChoice(CarvDirectionTag))
 
 	invertImage := false
 	if bottomZ > topZ {
@@ -165,7 +165,7 @@ func (c *Controller) doRunCarver() {
 			float64(topZ), float64(bottomZ), float64(toolDiameter)),
 		float64(topZ), float64(bottomZ),
 		stepOverFraction, float64(maxStepDown),
-		mode)
+		carvingMode)
 
 	finishStepFraction :=
 		float64(c.model.GetFloat32(FinishPassReductionTag)) * 0.01 * stepOverFraction
@@ -294,6 +294,10 @@ func (c *Controller) doOnItemChanged(tag string) {
 		c.model.root.Carving.EnableFinishPass = c.uiManager.GetUIItemBoolValue(tag)
 	case FinishPassReductionTag:
 		c.model.root.Carving.FinishPassReductionPercent = c.uiManager.GetUIItemFloatValue(tag)
+	case FinishPassModeTag:
+		c.model.root.Carving.FinishMode = c.uiManager.GetUIItemIntValue(tag)
+	case FinishPassHorizFeedRateTag:
+		c.model.root.Carving.FinishHorizFeedRate = c.uiManager.GetUIItemFloatValue(tag)
 	default:
 		log.Fatalf("Controller: doOnItemChanged - unknown tag = %s", tag)
 		return
@@ -348,6 +352,10 @@ func (c *Controller) updateUIFromModel(tag string) {
 		c.uiManager.SetUIItemBoolValue(tag, c.model.root.Carving.EnableFinishPass)
 	case FinishPassReductionTag:
 		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Carving.FinishPassReductionPercent)
+	case FinishPassModeTag:
+		c.uiManager.SetUIItemIntValue(tag, c.model.root.Carving.FinishMode)
+	case FinishPassHorizFeedRateTag:
+		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Carving.FinishHorizFeedRate)
 	default:
 		log.Fatalf("Controller: updateUIFromModel - unknown tag = %s", tag)
 		return
