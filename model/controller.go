@@ -167,7 +167,8 @@ func (c *Controller) doRunCarver() {
 		stepOverFraction, float64(maxStepDown),
 		mode)
 
-	finishStepFraction := float64(c.model.GetFloat32(FinishPassReductionTag)) * 0.01
+	finishStepFraction :=
+		float64(c.model.GetFloat32(FinishPassReductionTag)) * 0.01 * stepOverFraction
 	enableFinish := c.model.GetBool(UseFinishPassTag)
 	carver.ConfigureFinishingPass(enableFinish, finishStepFraction)
 
