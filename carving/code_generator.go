@@ -13,6 +13,9 @@ type codeGenerator interface {
 	// endJob is called once at the end of the carving job.
 	endJob()
 
+	// Change the horizontal fee rate to <newFeedRateMmPerMin> and return the old feed rate.
+	changeHorizontalFeedRate(newFeedRateMmPerMin float64) float64
+
 	// Each carving path constitutes of a series of 3D linear segments. The starting point is
 	// set with startPath. The subsequent points along the path are set with moveTo. Finally,
 	// the path is terminmated with a call to endPath. If discardPath is true, the generator

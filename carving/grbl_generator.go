@@ -37,9 +37,8 @@ type pt3 = geom.Pt3
 
 // grblGenerator implements the codeGenerator interface to generator GRBL code.
 type grblGenerator struct {
-	horizFeedRate   float64
-	vertFeedRate    float64
-	currentFeedRate float64
+	horizFeedRate float64
+	vertFeedRate  float64
 
 	currentPath []pt3
 	currentLoc  pt3
@@ -63,10 +62,16 @@ func (g *grblGenerator) configure(
 	g.grblOut = output
 }
 
+func (g *grblGenerator) changeHorizontalFeedRate(newFeedRateMmPerMin float64) float64 {
+	retVal := g.horizFeedRate
+	g.horizFeedRate = newFeedRateMmPerMin
+	return retVal
+}
+
 func (g *grblGenerator) startJob() {
 	g.reset()
 	g.currentPath = g.currentPath[:0] // Empty
-	g.writeGrblPeamble()
+	g.writeGrblPreamble()
 }
 
 func (g *grblGenerator) endJob() {
@@ -230,7 +235,7 @@ func (g *grblGenerator) repositionToPoint(p geom.Pt3) {
 	}
 }
 
-func (g *grblGenerator) writeGrblPeamble() {
+func (g *grblGenerator) writeGrblPreamble() {
 	g.writeStrLn(grblAbsolutePositioning)
 	g.writeStrLn(grblSelectPlaneXy)
 	g.writeStrLn(grblSetUnitMm)

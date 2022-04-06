@@ -16,6 +16,10 @@ const (
 	CarveModeYOnly  = 101
 	CarveModeXThenY = 102
 
+	FinishPassModeAlongFirstDirOnly = 200
+	FinishPassModeAlongLastDirOnly  = 201
+	FinishPassModeAlongAllDirs      = 202
+
 	minStepSize = 0.1 // Minimum step size in mm, a.k.a. resolution.
 )
 
@@ -41,8 +45,10 @@ type Carver struct {
 	horizFeedRate    float64
 	vertFeedRate     float64
 
-	enableFinishingPass       bool
-	finishingPassStepFraction float64
+	enableFinishingPass        bool
+	finishingPassStepFraction  float64
+	finishingPassMode          int
+	finishingPassHorizFeedRate float64
 
 	sampler hmap.ScalarGridSampler
 	output  io.Writer
@@ -100,12 +106,16 @@ func (c *Carver) ConfigureCarvingProfile(
 // Configure the finishing pass. When enabled, the finishing pass is the very last carving pass
 // in either direction. It runs once at full depth with the step-over reduced to the given
 // fraction.
-func (c *Carver) ConfigureFinishingPass(enabled bool, stepOverFraction float64) {
+func (c *Carver) ConfigureFinishingPass(
+	enabled bool, stepOverFraction float64, carverFinishMode int, horizFeedRate float64) {
 	if stepOverFraction >= 1.0 || stepOverFraction < 0.01 {
+		c.enableFinishingPass = false
 		return
 	}
 
 	c.enableFinishingPass = enabled
+	c.finishingPassHorizFeedRate = horizFeedRate
+	c.finishingPassMode = carverFinishMode
 	c.finishingPassStepFraction = stepOverFraction
 }
 
@@ -130,7 +140,9 @@ func (c *Carver) carveAlongX(gen codeGenerator) {
 
 	c.genCarvingRunsAlongX(c.stepOverFraction, false /* not full depth */, gen)
 	if c.needFinishingPassAlongX() {
+		oldFeedRate := gen.changeHorizontalFeedRate(c.finishingPassHorizFeedRate)
 		c.genCarvingRunsAlongX(c.finishingPassStepFraction, true /* full depth */, gen)
+		gen.changeHorizontalFeedRate(oldFeedRate)
 	}
 }
 
@@ -175,7 +187,9 @@ func (c *Carver) carveAlongY(gen codeGenerator) {
 
 	c.genCarvingRunsAlongY(c.stepOverFraction, c.carveMode == CarveModeXThenY, gen)
 	if c.needFinishingPassAlongY() {
+		oldFeedRate := gen.changeHorizontalFeedRate(c.finishingPassHorizFeedRate)
 		c.genCarvingRunsAlongY(c.finishingPassStepFraction, true /* full depth */, gen)
+		gen.changeHorizontalFeedRate(oldFeedRate)
 	}
 }
 
@@ -341,19 +355,55 @@ func (c *Carver) getNumRunsNeeded(stepOverFraction, distToCover float64) int {
 // Returns whether a finishing pass is needed in the x-direction.
 func (c *Carver) needFinishingPassAlongX() bool {
 	// Finishing must be enabled
-	return c.enableFinishingPass &&
-		// We must not be carving along Y next
-		c.carveMode == CarveModeXOnly &&
-		// There's no point in finishing with the same step-over fraction
-		c.finishingPassStepFraction != c.stepOverFraction
+	if !c.enableFinishingPass {
+		return false
+	}
+
+	// There's no point in finishing with the same step-over fraction
+	if math.Abs(c.finishingPassStepFraction-c.stepOverFraction) < 0.02 {
+		return false
+	}
+
+	// We must not be carving along Y only.
+	if c.carveMode == CarveModeYOnly {
+		return false
+	}
+
+	// If carving along X only, then any finish mode is fine.
+	if c.carveMode == CarveModeXOnly {
+		return true
+	}
+
+	// If carving in both X and Y directions, then match finish mode.
+	return c.carveMode == CarveModeXThenY &&
+		(c.finishingPassMode == FinishPassModeAlongFirstDirOnly ||
+			c.finishingPassMode == FinishPassModeAlongAllDirs)
 }
 
 // Returns whether a finishing pass is needed in the y-direction.
 func (c *Carver) needFinishingPassAlongY() bool {
 	// Finishing must be enabled
-	return c.enableFinishingPass &&
-		// We must be carving along Y next
-		c.carveMode != CarveModeXOnly &&
-		// There's no point in finishing with the same step-over fraction
-		c.finishingPassStepFraction != c.stepOverFraction
+	if !c.enableFinishingPass {
+		return false
+	}
+
+	// There's no point in finishing with the same step-over fraction
+	if math.Abs(c.finishingPassStepFraction-c.stepOverFraction) < 0.02 {
+		return false
+	}
+
+	// We must not be carving along X only.
+	if c.carveMode == CarveModeXOnly {
+		return false
+	}
+
+	// If carving along Y only, then any finish mode is fine.
+	if c.carveMode == CarveModeYOnly {
+		return true
+	}
+
+	// If carving in both X and Y directions, then match finish mode.
+	return c.carveMode == CarveModeXThenY &&
+		(c.finishingPassMode == FinishPassModeAlongLastDirOnly ||
+			c.finishingPassMode == FinishPassModeAlongAllDirs)
 }
