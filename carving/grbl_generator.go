@@ -14,7 +14,7 @@ const (
 	epsilon     = 1e-5
 	epsilonSqrd = epsilon * epsilon
 
-	tolerance     = 0.001
+	tolerance     = 0.06
 	toleranceSqrd = tolerance * tolerance
 
 	grblAbsolutePositioning = "G90"
@@ -100,7 +100,7 @@ func (g *grblGenerator) endPath(discard bool) {
 		return
 	}
 
-	// g.simplifyPath()
+	g.simplifyPath()
 	if len(g.currentPath) > 1 {
 		g.emitGrblForCurrentPath()
 	}
