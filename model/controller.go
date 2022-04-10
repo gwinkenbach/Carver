@@ -170,7 +170,11 @@ func (c *Controller) doRunCarver() {
 	finishStepFraction :=
 		float64(c.model.GetFloat32(FinishPassReductionTag)) * 0.01 * stepOverFraction
 	enableFinish := c.model.GetBool(UseFinishPassTag)
-	carver.ConfigureFinishingPass(enableFinish, finishStepFraction)
+	carver.ConfigureFinishingPass(
+		enableFinish,
+		finishStepFraction,
+		carverFinishModeFromModelFinishMode(c.model.GetChoice(FinishPassModeTag)),
+		float64(c.model.GetFloat32(FinishPassHorizFeedRateTag)))
 
 	title := "Generating carving code"
 	progress := c.showProgressDialog(title, filepath.Base(c.model.fromFilePath))
@@ -456,6 +460,20 @@ func carverModeFromModelCarvingMode(modelCarvingMode int) int {
 		return carv.CarveModeXThenY
 	default:
 		log.Fatalln("Unknown model carving mode")
+		return 0
+	}
+}
+
+func carverFinishModeFromModelFinishMode(modelFinishMode int) int {
+	switch modelFinishMode {
+	case FinishModeFirstDirectionOnly:
+		return carv.FinishPassModeAlongFirstDirOnly
+	case FinishModeLastDirectionOnly:
+		return carv.FinishPassModeAlongLastDirOnly
+	case FinishModeInAllDirections:
+		return carv.FinishPassModeAlongAllDirs
+	default:
+		log.Fatalln("Unknown model finish-pass mode")
 		return 0
 	}
 }
