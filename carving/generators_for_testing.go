@@ -50,9 +50,15 @@ type unitTestGenerator struct {
 	pathCompleted bool
 }
 
+var _ codeGenerator = (*unitTestGenerator)(nil)
+
 func (g *unitTestGenerator) configure(
 	output io.Writer,
 	matWidth, matHeight, matThickness float64) {
+}
+
+func (g *unitTestGenerator) changeHorizontalFeedRate(newFeedRateMmPerMin float64) float64 {
+	return 400.0
 }
 
 func (g *unitTestGenerator) startJob() {
