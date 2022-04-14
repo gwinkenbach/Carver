@@ -181,11 +181,9 @@ func (c *Carver) genCarvingRunsAlongX(
 // Generate carving runs along the y-direction. This will generate the main carving passes as
 // well as the optional finishing pass if carving only takes place along X.
 func (c *Carver) carveAlongY(gen codeGenerator) {
-	if c.carveMode != CarveModeYOnly && c.carveMode != CarveModeXThenY {
-		return
+	if c.carveMode != CarveModeXOnly {
+		c.genCarvingRunsAlongY(c.stepOverFraction, c.carveMode == CarveModeXThenY, gen)
 	}
-
-	c.genCarvingRunsAlongY(c.stepOverFraction, c.carveMode == CarveModeXThenY, gen)
 	if c.needFinishingPassAlongY() {
 		oldFeedRate := gen.changeHorizontalFeedRate(c.finishingPassHorizFeedRate)
 		c.genCarvingRunsAlongY(c.finishingPassStepFraction, true /* full depth */, gen)
@@ -392,18 +390,15 @@ func (c *Carver) needFinishingPassAlongY() bool {
 		return false
 	}
 
-	// We must not be carving along X only.
 	if c.carveMode == CarveModeXOnly {
-		return false
+		return c.finishingPassMode == FinishPassModeAlongAllDirs
 	}
 
-	// If carving along Y only, then any finish mode is fine.
-	if c.carveMode == CarveModeYOnly {
-		return true
+	if c.carveMode == CarveModeXThenY {
+		return c.finishingPassMode == FinishPassModeAlongLastDirOnly ||
+			c.finishingPassMode == FinishPassModeAlongAllDirs
 	}
 
-	// If carving in both X and Y directions, then match finish mode.
-	return c.carveMode == CarveModeXThenY &&
-		(c.finishingPassMode == FinishPassModeAlongLastDirOnly ||
-			c.finishingPassMode == FinishPassModeAlongAllDirs)
+	// Carving along Y only, then finishing is always allowable.
+	return true
 }
