@@ -46,17 +46,17 @@ func (v Vec2) Norm() Vec2 {
 }
 
 // LenSq returns the length of vector v squared.
-func (v *Vec2) LenSq() float64 {
+func (v Vec2) LenSq() float64 {
 	return v.X*v.X + v.Y*v.Y
 }
 
 // Len returns the length of vector v.
-func (v *Vec2) Len() float64 {
+func (v Vec2) Len() float64 {
 	return math.Sqrt(v.X*v.X + v.Y*v.Y)
 }
 
 // Xform returns v * m, or v transformed by matrix m.
-func (v *Vec2) Xform(m *Matrix33) Vec2 {
+func (v Vec2) Xform(m *Matrix33) Vec2 {
 	return Vec2{
 		X: v.X*m.a[0][0] + v.Y*m.a[1][0],
 		Y: v.X*m.a[0][1] + v.Y*m.a[1][1],
