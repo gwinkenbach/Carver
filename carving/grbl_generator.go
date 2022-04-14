@@ -14,8 +14,11 @@ const (
 	epsilon     = 1e-5
 	epsilonSqrd = epsilon * epsilon
 
-	tolerance     = 0.06
-	toleranceSqrd = tolerance * tolerance
+	flatnessTolerance     = 0.04
+	flatnessToleranceSqrd = flatnessTolerance * flatnessTolerance
+
+	proximityTolerance     = 0.15
+	proximityToleranceSqrd = proximityTolerance * proximityTolerance
 
 	grblAbsolutePositioning = "G90"
 	grblSelectPlaneXy       = "G17"
@@ -129,21 +132,22 @@ func (g *grblGenerator) shouldUsePoint(q pt3) bool {
 	}
 
 	lastPathPoint := g.currentPath[numPoints-1]
-	if lastPathPoint.Eq(q) {
-		return false
-	}
+	return !lastPathPoint.Eq(q)
+}
 
-	return true
+func (g *grblGenerator) simplifyPath() {
+	g.simplifyPathByFlatness()
+	g.simplifyPathByProximity()
 }
 
 // Simplify the path in g.currentPath. Points that are almost colinear are coalesced into
 // line segments.
-func (g *grblGenerator) simplifyPath() {
+func (g *grblGenerator) simplifyPathByFlatness() {
 	if len(g.currentPath) < 3 {
 		return
 	}
 
-	// Function keepPoint and related keepIndex are used to keep track of points we do not discrad,
+	// Function keepPoint and related keepIndex are used to keep track of points we do not discard,
 	// in-place within g.currentPath.
 	keepIndex := 0
 	keepPoint := func(i int) {
@@ -162,12 +166,16 @@ func (g *grblGenerator) simplifyPath() {
 		q := p0 + 1
 		distSqrd := 0.0
 		for q < p1 {
-			d := distQtoP0P1Sqrd(g.currentPath[q], g.currentPath[p0], g.currentPath[p1])
+			ptQ := g.currentPath[q]
+			ptP0 := g.currentPath[p0]
+			ptP1 := g.currentPath[p1]
+
+			d := distQtoP0P1Sqrd(ptQ, ptP0, ptP1)
 			distSqrd = math.Max(distSqrd, d)
 			q++
 		}
 
-		if distSqrd > toleranceSqrd {
+		if distSqrd > flatnessToleranceSqrd {
 			// Some point q between p0 and p1 is out of tolerance. We need to keep p0, p1-1 and discard
 			// all the points between p0 and p1-1. Then we start a new colinear-point accumulation at
 			// p1-1.
@@ -184,6 +192,65 @@ func (g *grblGenerator) simplifyPath() {
 	p0++
 	if p0 < len(g.currentPath) {
 		keepPoint(len(g.currentPath) - 1)
+	}
+
+	g.currentPath = g.currentPath[:keepIndex]
+}
+
+// Points that are too close to eachother, along X or Y are coalesced.
+func (g *grblGenerator) simplifyPathByProximity() {
+	if len(g.currentPath) < 3 {
+		return
+	}
+
+	// Function keepPoint and related keepIndex are used to keep track of points we do not discard,
+	// in-place within g.currentPath.
+	keepIndex := 0
+	keepPoint := func(q geom.Pt3) {
+		if keepIndex > 0 {
+			if g.currentPath[keepIndex-1].Eq(q) {
+				return
+			}
+		}
+		g.currentPath[keepIndex] = q
+		keepIndex++
+	}
+
+	updateLastPoint := func(q geom.Pt3) {
+		if keepIndex > 0 {
+			g.currentPath[keepIndex-1] = q
+		}
+	}
+
+	p0 := 0
+	p1 := 1
+	n := len(g.currentPath)
+	q0 := g.currentPath[p0]
+
+	keepPoint(q0)
+	for p1 < n {
+		q1 := g.currentPath[p1]
+
+		xy1 := geom.NewPt2(q1.X, q1.Y)
+		xy0 := geom.NewPt2(q0.X, q0.Y)
+		d := xy1.Sub(xy0).LenSq()
+		if d < proximityToleranceSqrd {
+			maxZ := math.Max(q0.Z, q1.Z)
+			if p1 == n-1 {
+				// p1 is the last point along the path; keep it.
+				q1.Z = maxZ
+				updateLastPoint(q1)
+			} else {
+				q0.Z = maxZ
+				updateLastPoint(q0)
+			}
+		} else {
+			keepPoint(q1)
+			p0 = p1
+			q0 = q1
+		}
+
+		p1++
 	}
 
 	g.currentPath = g.currentPath[:keepIndex]
