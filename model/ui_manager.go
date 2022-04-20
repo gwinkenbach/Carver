@@ -2,6 +2,7 @@ package model
 
 import (
 	"image"
+	"log"
 	"time"
 
 	"alvin.com/GoCarver/fui"
@@ -285,6 +286,39 @@ func (ui *UIManager) delayedUpdateImagePanel() {
 	} else {
 		ui.updateImageTimer.Stop()
 		ui.updateImageTimer.Reset(25 * time.Millisecond)
+	}
+}
+
+func GetUiValueByTag[T any](ui *UIManager, tag string) T {
+	var ret T
+	switch p := any(&ret).(type) {
+	case *int:
+		*p = ui.GetUIItemIntValue(tag)
+	case *float32:
+		*p = ui.GetUIItemFloatValue(tag)
+	case *float64:
+		*p = float64(ui.GetUIItemFloatValue(tag))
+	case *bool:
+		*p = ui.GetUIItemBoolValue(tag)
+	default:
+		log.Fatalf("GetUiValueByTag: Unsupported type: %T\n", ret)
+	}
+
+	return ret
+}
+
+func SetUiValueByTag[T any](ui *UIManager, tag string, val T) {
+	switch p := any(&val).(type) {
+	case *int:
+		ui.SetUIItemIntValue(tag, *p)
+	case *float32:
+		ui.SetUIItemFloatValue(tag, *p)
+	case *float64:
+		ui.SetUIItemFloatValue(tag, float32(*p))
+	case *bool:
+		ui.SetUIItemBoolValue(tag, *p)
+	default:
+		log.Fatalf("SetUiValueByTag: Unsupported type: %T\n", val)
 	}
 }
 

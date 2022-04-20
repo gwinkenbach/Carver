@@ -180,3 +180,103 @@ func (m *Model) GetBool(tag string) bool {
 func (m *Model) GetHeightMap() image.Image {
 	return m.root.HeightMap.Image
 }
+
+func (m *Model) SetFloat32(tag string, val float32) {
+	switch tag {
+	case MatWidthTag:
+		m.root.Material.MaterialWidth = val
+	case MatHeightTag:
+		m.root.Material.MaterialHeight = val
+	case MatThicknessTag:
+		m.root.Material.MaterialThickness = val
+	case CarvWidthTag:
+		m.root.Material.CarvingAreaWidth = val
+	case CarvHeightTag:
+		m.root.Material.CarvingAreaHeight = val
+	case CarvOffsetXTag:
+		m.root.Material.CarvingAreaOffsetX = val
+	case CarvOffsetYTag:
+		m.root.Material.CarvingAreaOffsetY = val
+	case CarvBlackDepthTag:
+		m.root.Material.BlackCarvingDepth = val
+	case CarvWhiteDepthTag:
+		m.root.Material.WhiteCarvingDepth = val
+	case ToolDiamTag:
+		m.root.Carving.ToolDiameter = val
+	case StepOverTag:
+		m.root.Carving.StepOverPercent = val
+	case MaxStepDownTag:
+		m.root.Carving.MaxStepDownSize = val
+	case HorizFeedRateTag:
+		m.root.Carving.HorizontalFeedRate = val
+	case VertFeedRateTag:
+		m.root.Carving.VerticalFeedRate = val
+	case FinishPassReductionTag:
+		m.root.Carving.FinishPassReductionPercent = val
+	case FinishPassHorizFeedRateTag:
+		m.root.Carving.FinishHorizFeedRate = val
+	default:
+		log.Fatalf("Model: SetFloat32: Invalid tag = %s", tag)
+	}
+}
+
+func (m *Model) SetChoice(tag string, val int) {
+	switch tag {
+	case CarvDirectionTag:
+		m.root.Carving.CarvingMode = val
+	case ImgFillModeTag:
+		m.root.HeightMap.ImageMode = val
+	case ToolTypeTag:
+		m.root.Carving.ToolType = val
+	case FinishPassModeTag:
+		m.root.Carving.FinishMode = val
+	default:
+		log.Fatalf("Model: SetChoice: Invalid tag = %s", tag)
+	}
+}
+
+func (m *Model) SetBool(tag string, val bool) {
+	switch tag {
+	case ImgMirrorXTag:
+		m.root.HeightMap.MirrorX = val
+	case ImgMirrorYTag:
+		m.root.HeightMap.MirrorY = val
+	case UseFinishPassTag:
+		m.root.Carving.EnableFinishPass = val
+	default:
+		log.Fatalf("Model: SetBool: Invalid tag = %s", tag)
+	}
+}
+
+func GetModelValueByTag[T any](m *Model, tag string) T {
+	var ret T
+	switch p := any(&ret).(type) {
+	case *int:
+		*p = m.GetChoice(tag)
+	case *float32:
+		*p = m.GetFloat32(tag)
+	case *float64:
+		*p = float64(m.GetFloat32(tag))
+	case *bool:
+		*p = m.GetBool(tag)
+	default:
+		log.Fatalf("GetModelValueByTag: Unsupported type: %T\n", ret)
+	}
+
+	return ret
+}
+
+func SetModelValueByTag[T any](m *Model, tag string, val T) {
+	switch p := any(&val).(type) {
+	case *int:
+		m.SetChoice(tag, *p)
+	case *float32:
+		m.SetFloat32(tag, *p)
+	case *float64:
+		m.SetFloat32(tag, float32(*p))
+	case *bool:
+		m.SetBool(tag, *p)
+	default:
+		log.Fatalf("SetModelValueByTag: Unsupported type: %T\n", val)
+	}
+}

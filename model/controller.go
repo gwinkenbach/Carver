@@ -256,52 +256,14 @@ func (c *Controller) doOpenModel() {
 
 func (c *Controller) doOnItemChanged(tag string) {
 	switch tag {
-	case MatWidthTag:
-		c.model.root.Material.MaterialWidth = c.uiManager.GetUIItemFloatValue(tag)
-	case MatHeightTag:
-		c.model.root.Material.MaterialHeight = c.uiManager.GetUIItemFloatValue(tag)
-	case MatThicknessTag:
-		c.model.root.Material.MaterialThickness = c.uiManager.GetUIItemFloatValue(tag)
-	case CarvWidthTag:
-		c.model.root.Material.CarvingAreaWidth = c.uiManager.GetUIItemFloatValue(tag)
-	case CarvHeightTag:
-		c.model.root.Material.CarvingAreaHeight = c.uiManager.GetUIItemFloatValue(tag)
-	case CarvOffsetXTag:
-		c.model.root.Material.CarvingAreaOffsetX = c.uiManager.GetUIItemFloatValue(tag)
-	case CarvOffsetYTag:
-		c.model.root.Material.CarvingAreaOffsetY = c.uiManager.GetUIItemFloatValue(tag)
-	case CarvBlackDepthTag:
-		c.model.root.Material.BlackCarvingDepth = c.uiManager.GetUIItemFloatValue(tag)
-	case CarvWhiteDepthTag:
-		c.model.root.Material.WhiteCarvingDepth = c.uiManager.GetUIItemFloatValue(tag)
-	case ToolDiamTag:
-		c.model.root.Carving.ToolDiameter = c.uiManager.GetUIItemFloatValue(tag)
-	case ToolTypeTag:
-		c.model.root.Carving.ToolType = c.uiManager.GetUIItemIntValue(tag)
-	case StepOverTag:
-		c.model.root.Carving.StepOverPercent = c.uiManager.GetUIItemFloatValue(tag)
-	case MaxStepDownTag:
-		c.model.root.Carving.MaxStepDownSize = c.uiManager.GetUIItemFloatValue(tag)
-	case HorizFeedRateTag:
-		c.model.root.Carving.HorizontalFeedRate = c.uiManager.GetUIItemFloatValue(tag)
-	case VertFeedRateTag:
-		c.model.root.Carving.VerticalFeedRate = c.uiManager.GetUIItemFloatValue(tag)
-	case CarvDirectionTag:
-		c.model.root.Carving.CarvingMode = c.uiManager.GetUIItemIntValue(tag)
-	case ImgFillModeTag:
-		c.model.root.HeightMap.ImageMode = c.uiManager.GetUIItemIntValue(tag)
-	case ImgMirrorXTag:
-		c.model.root.HeightMap.MirrorX = c.uiManager.GetUIItemBoolValue(tag)
-	case ImgMirrorYTag:
-		c.model.root.HeightMap.MirrorY = c.uiManager.GetUIItemBoolValue(tag)
-	case UseFinishPassTag:
-		c.model.root.Carving.EnableFinishPass = c.uiManager.GetUIItemBoolValue(tag)
-	case FinishPassReductionTag:
-		c.model.root.Carving.FinishPassReductionPercent = c.uiManager.GetUIItemFloatValue(tag)
-	case FinishPassModeTag:
-		c.model.root.Carving.FinishMode = c.uiManager.GetUIItemIntValue(tag)
-	case FinishPassHorizFeedRateTag:
-		c.model.root.Carving.FinishHorizFeedRate = c.uiManager.GetUIItemFloatValue(tag)
+	case MatWidthTag, MatHeightTag, MatThicknessTag, CarvWidthTag, CarvHeightTag, CarvOffsetXTag,
+		CarvOffsetYTag, CarvBlackDepthTag, CarvWhiteDepthTag, ToolDiamTag, StepOverTag, MaxStepDownTag,
+		HorizFeedRateTag, VertFeedRateTag, FinishPassReductionTag, FinishPassHorizFeedRateTag:
+		SetModelValueByTag(c.model, tag, GetUiValueByTag[float32](c.uiManager, tag))
+	case ToolTypeTag, CarvDirectionTag, ImgFillModeTag, FinishPassModeTag:
+		SetModelValueByTag(c.model, tag, GetUiValueByTag[int](c.uiManager, tag))
+	case ImgMirrorXTag, ImgMirrorYTag, UseFinishPassTag:
+		SetModelValueByTag(c.model, tag, GetUiValueByTag[bool](c.uiManager, tag))
 	default:
 		log.Fatalf("Controller: doOnItemChanged - unknown tag = %s", tag)
 		return
@@ -313,53 +275,14 @@ func (c *Controller) doOnItemChanged(tag string) {
 
 func (c *Controller) updateUIFromModel(tag string) {
 	switch tag {
-
-	case MatWidthTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Material.MaterialWidth)
-	case MatHeightTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Material.MaterialHeight)
-	case MatThicknessTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Material.MaterialThickness)
-	case CarvWidthTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Material.CarvingAreaWidth)
-	case CarvHeightTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Material.CarvingAreaHeight)
-	case CarvOffsetXTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Material.CarvingAreaOffsetX)
-	case CarvOffsetYTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Material.CarvingAreaOffsetY)
-	case CarvBlackDepthTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Material.BlackCarvingDepth)
-	case CarvWhiteDepthTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Material.WhiteCarvingDepth)
-	case ToolDiamTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Carving.ToolDiameter)
-	case ToolTypeTag:
-		c.uiManager.SetUIItemIntValue(tag, c.model.root.Carving.ToolType)
-	case StepOverTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Carving.StepOverPercent)
-	case MaxStepDownTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Carving.MaxStepDownSize)
-	case HorizFeedRateTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Carving.HorizontalFeedRate)
-	case VertFeedRateTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Carving.VerticalFeedRate)
-	case CarvDirectionTag:
-		c.uiManager.SetUIItemIntValue(tag, c.model.root.Carving.CarvingMode)
-	case ImgFillModeTag:
-		c.uiManager.SetUIItemIntValue(tag, c.model.root.HeightMap.ImageMode)
-	case ImgMirrorXTag:
-		c.uiManager.SetUIItemBoolValue(tag, c.model.root.HeightMap.MirrorX)
-	case ImgMirrorYTag:
-		c.uiManager.SetUIItemBoolValue(tag, c.model.root.HeightMap.MirrorY)
-	case UseFinishPassTag:
-		c.uiManager.SetUIItemBoolValue(tag, c.model.root.Carving.EnableFinishPass)
-	case FinishPassReductionTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Carving.FinishPassReductionPercent)
-	case FinishPassModeTag:
-		c.uiManager.SetUIItemIntValue(tag, c.model.root.Carving.FinishMode)
-	case FinishPassHorizFeedRateTag:
-		c.uiManager.SetUIItemFloatValue(tag, c.model.root.Carving.FinishHorizFeedRate)
+	case MatWidthTag, MatHeightTag, MatThicknessTag, CarvWidthTag, CarvHeightTag, CarvOffsetXTag,
+		CarvOffsetYTag, CarvBlackDepthTag, CarvWhiteDepthTag, ToolDiamTag, StepOverTag, MaxStepDownTag,
+		HorizFeedRateTag, VertFeedRateTag, FinishPassReductionTag, FinishPassHorizFeedRateTag:
+		SetUiValueByTag(c.uiManager, tag, GetModelValueByTag[float32](c.model, tag))
+	case ToolTypeTag, CarvDirectionTag, ImgFillModeTag, FinishPassModeTag:
+		SetUiValueByTag(c.uiManager, tag, GetModelValueByTag[int](c.model, tag))
+	case ImgMirrorXTag, ImgMirrorYTag, UseFinishPassTag:
+		SetUiValueByTag(c.uiManager, tag, GetModelValueByTag[bool](c.model, tag))
 	default:
 		log.Fatalf("Controller: updateUIFromModel - unknown tag = %s", tag)
 		return
