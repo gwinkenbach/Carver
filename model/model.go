@@ -42,10 +42,24 @@ type heightMap struct {
 	MirrorX       bool        `json:"mirrorX"`
 }
 
+type contourMachining struct {
+	Enable             bool    `json:"enable_contour_machining"`
+	ToolType           int     `json:"contour_tool_type"`
+	ToolDiameter       float32 `json:"contour_tool_diameter"`
+	MaxStepDownSize    float32 `json:"contour_max_step_down_size"`
+	HorizontalFeedRate float32 `json:"contour_horizontal_feed_rate"`
+	VerticalFeedRate   float32 `json:"contour_vertical_feed_rate"`
+	CornerRadius       float32 `json:"contour_corner_radius"`
+	NumTabsPerSize     int     `json:"contour_num_tabs_per_side"`
+	TabWidth           float32 `json:"contour_tab_width"`
+	TabHeight          float32 `json:"contour_tab_height"`
+}
+
 type modelRoot struct {
-	Material  material  `json:"material"`
-	Carving   carving   `json:"carving"`
-	HeightMap heightMap `json:"height_map"`
+	Material  material         `json:"material"`
+	Carving   carving          `json:"carving"`
+	HeightMap heightMap        `json:"height_map"`
+	Contour   contourMachining `json:"contour_machining"`
 }
 
 const (
@@ -107,7 +121,7 @@ func (m *Model) SetDirty(dirty bool) {
 	m.dirty = dirty
 }
 
-func (m *Model) GetFloat32(tag string) float32 {
+func (m *Model) GetFloat32Value(tag string) float32 {
 	switch tag {
 	case MatWidthTag:
 		return m.root.Material.MaterialWidth
@@ -141,13 +155,27 @@ func (m *Model) GetFloat32(tag string) float32 {
 		return m.root.Carving.FinishPassReductionPercent
 	case FinishPassHorizFeedRateTag:
 		return m.root.Carving.FinishHorizFeedRate
+	case ContourCornerRadiusTag:
+		return m.root.Contour.CornerRadius
+	case ContourHorizFeedRateTag:
+		return m.root.Contour.HorizontalFeedRate
+	case ContourVertFeedRateTag:
+		return m.root.Contour.VerticalFeedRate
+	case ContourToolDiameterTag:
+		return m.root.Contour.ToolDiameter
+	case ContourTabWidthTag:
+		return m.root.Contour.TabWidth
+	case ContourTabHeightTag:
+		return m.root.Contour.TabHeight
+	case ContourMaxStepDownTag:
+		return m.root.Contour.MaxStepDownSize
 	}
 
 	log.Fatalf("Model: GetFloat32: Invalid tag = %s", tag)
 	return 0
 }
 
-func (m *Model) GetChoice(tag string) int {
+func (m *Model) GetIntValue(tag string) int {
 	switch tag {
 	case CarvDirectionTag:
 		return m.root.Carving.CarvingMode
@@ -157,13 +185,17 @@ func (m *Model) GetChoice(tag string) int {
 		return m.root.Carving.ToolType
 	case FinishPassModeTag:
 		return m.root.Carving.FinishMode
+	case ContourToolTypeTag:
+		return m.root.Contour.ToolType
+	case ContourNubTabsPerSideTag:
+		return m.root.Contour.NumTabsPerSize
 	}
 
 	log.Fatalf("Model: GetChoice: Invalid tag = %s", tag)
 	return 0
 }
 
-func (m *Model) GetBool(tag string) bool {
+func (m *Model) GetBoolValue(tag string) bool {
 	switch tag {
 	case ImgMirrorXTag:
 		return m.root.HeightMap.MirrorX
@@ -171,6 +203,8 @@ func (m *Model) GetBool(tag string) bool {
 		return m.root.HeightMap.MirrorY
 	case UseFinishPassTag:
 		return m.root.Carving.EnableFinishPass
+	case EnableContourTag:
+		return m.root.Contour.Enable
 	}
 
 	log.Fatalf("Model: GetBool: Invalid tag = %s", tag)
@@ -181,7 +215,7 @@ func (m *Model) GetHeightMap() image.Image {
 	return m.root.HeightMap.Image
 }
 
-func (m *Model) SetFloat32(tag string, val float32) {
+func (m *Model) SetFloat32Value(tag string, val float32) {
 	switch tag {
 	case MatWidthTag:
 		m.root.Material.MaterialWidth = val
@@ -215,12 +249,26 @@ func (m *Model) SetFloat32(tag string, val float32) {
 		m.root.Carving.FinishPassReductionPercent = val
 	case FinishPassHorizFeedRateTag:
 		m.root.Carving.FinishHorizFeedRate = val
+	case ContourCornerRadiusTag:
+		m.root.Contour.CornerRadius = val
+	case ContourHorizFeedRateTag:
+		m.root.Contour.HorizontalFeedRate = val
+	case ContourVertFeedRateTag:
+		m.root.Contour.VerticalFeedRate = val
+	case ContourToolDiameterTag:
+		m.root.Contour.ToolDiameter = val
+	case ContourTabWidthTag:
+		m.root.Contour.TabWidth = val
+	case ContourTabHeightTag:
+		m.root.Contour.TabHeight = val
+	case ContourMaxStepDownTag:
+		m.root.Contour.MaxStepDownSize = val
 	default:
 		log.Fatalf("Model: SetFloat32: Invalid tag = %s", tag)
 	}
 }
 
-func (m *Model) SetChoice(tag string, val int) {
+func (m *Model) SetIntValue(tag string, val int) {
 	switch tag {
 	case CarvDirectionTag:
 		m.root.Carving.CarvingMode = val
@@ -230,12 +278,16 @@ func (m *Model) SetChoice(tag string, val int) {
 		m.root.Carving.ToolType = val
 	case FinishPassModeTag:
 		m.root.Carving.FinishMode = val
+	case ContourToolTypeTag:
+		m.root.Contour.ToolType = val
+	case ContourNubTabsPerSideTag:
+		m.root.Contour.NumTabsPerSize = val
 	default:
 		log.Fatalf("Model: SetChoice: Invalid tag = %s", tag)
 	}
 }
 
-func (m *Model) SetBool(tag string, val bool) {
+func (m *Model) SetBoolValue(tag string, val bool) {
 	switch tag {
 	case ImgMirrorXTag:
 		m.root.HeightMap.MirrorX = val
@@ -243,6 +295,8 @@ func (m *Model) SetBool(tag string, val bool) {
 		m.root.HeightMap.MirrorY = val
 	case UseFinishPassTag:
 		m.root.Carving.EnableFinishPass = val
+	case EnableContourTag:
+		m.root.Contour.Enable = val
 	default:
 		log.Fatalf("Model: SetBool: Invalid tag = %s", tag)
 	}
@@ -252,13 +306,13 @@ func GetModelValueByTag[T any](m *Model, tag string) T {
 	var ret T
 	switch p := any(&ret).(type) {
 	case *int:
-		*p = m.GetChoice(tag)
+		*p = m.GetIntValue(tag)
 	case *float32:
-		*p = m.GetFloat32(tag)
+		*p = m.GetFloat32Value(tag)
 	case *float64:
-		*p = float64(m.GetFloat32(tag))
+		*p = float64(m.GetFloat32Value(tag))
 	case *bool:
-		*p = m.GetBool(tag)
+		*p = m.GetBoolValue(tag)
 	default:
 		log.Fatalf("GetModelValueByTag: Unsupported type: %T\n", ret)
 	}
@@ -269,13 +323,13 @@ func GetModelValueByTag[T any](m *Model, tag string) T {
 func SetModelValueByTag[T any](m *Model, tag string, val T) {
 	switch p := any(&val).(type) {
 	case *int:
-		m.SetChoice(tag, *p)
+		m.SetIntValue(tag, *p)
 	case *float32:
-		m.SetFloat32(tag, *p)
+		m.SetFloat32Value(tag, *p)
 	case *float64:
-		m.SetFloat32(tag, float32(*p))
+		m.SetFloat32Value(tag, float32(*p))
 	case *bool:
-		m.SetBool(tag, *p)
+		m.SetBoolValue(tag, *p)
 	default:
 		log.Fatalf("SetModelValueByTag: Unsupported type: %T\n", val)
 	}

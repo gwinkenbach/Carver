@@ -132,27 +132,27 @@ func (c *Controller) doRunCarver() {
 	// util.WriteGray16ImageToPng(gr, "/Users/billy/test_gary.png")
 
 	materialDim := geom.NewSize2FromFloat32(
-		c.model.GetFloat32(MatWidthTag), c.model.GetFloat32(MatHeightTag))
+		c.model.GetFloat32Value(MatWidthTag), c.model.GetFloat32Value(MatHeightTag))
 	carvingOrigin := geom.NewPt2FromFloat32(
-		c.model.GetFloat32(CarvOffsetXTag), c.model.GetFloat32(CarvOffsetYTag))
+		c.model.GetFloat32Value(CarvOffsetXTag), c.model.GetFloat32Value(CarvOffsetYTag))
 	carvingAreaDim := geom.NewSize2FromFloat32(
-		c.model.GetFloat32(CarvWidthTag), c.model.GetFloat32(CarvHeightTag))
-	materialTopZ := c.model.GetFloat32(MatThicknessTag)
+		c.model.GetFloat32Value(CarvWidthTag), c.model.GetFloat32Value(CarvHeightTag))
+	materialTopZ := c.model.GetFloat32Value(MatThicknessTag)
 	carver.ConfigureMaterial(materialDim, carvingOrigin, carvingAreaDim, float64(materialTopZ))
 
-	toolType := carverToolTypeFromModelToolType(c.model.GetChoice(ToolTypeTag))
-	toolDiameter := c.model.GetFloat32(ToolDiamTag)
-	horizFeedRate := c.model.GetFloat32(HorizFeedRateTag)
-	vertFeedRate := c.model.GetFloat32(VertFeedRateTag)
+	toolType := carverToolTypeFromModelToolType(c.model.GetIntValue(ToolTypeTag))
+	toolDiameter := c.model.GetFloat32Value(ToolDiamTag)
+	horizFeedRate := c.model.GetFloat32Value(HorizFeedRateTag)
+	vertFeedRate := c.model.GetFloat32Value(VertFeedRateTag)
 	carver.ConfigureTool(
 		toolType, float64(toolDiameter), float64(horizFeedRate), float64(vertFeedRate))
 
-	topZ := materialTopZ + c.model.GetFloat32(CarvWhiteDepthTag)
-	bottomZ := materialTopZ + c.model.GetFloat32(CarvBlackDepthTag)
-	stepOverFraction := float64(c.model.GetFloat32(StepOverTag)) * 0.01
+	topZ := materialTopZ + c.model.GetFloat32Value(CarvWhiteDepthTag)
+	bottomZ := materialTopZ + c.model.GetFloat32Value(CarvBlackDepthTag)
+	stepOverFraction := float64(c.model.GetFloat32Value(StepOverTag)) * 0.01
 	stepOverFraction = math.Max(0.05, math.Min(1.0, stepOverFraction))
-	maxStepDown := c.model.GetFloat32(MaxStepDownTag)
-	carvingMode := carverModeFromModelCarvingMode(c.model.GetChoice(CarvDirectionTag))
+	maxStepDown := c.model.GetFloat32Value(MaxStepDownTag)
+	carvingMode := carverModeFromModelCarvingMode(c.model.GetIntValue(CarvDirectionTag))
 
 	invertImage := false
 	if bottomZ > topZ {
@@ -168,13 +168,13 @@ func (c *Controller) doRunCarver() {
 		carvingMode)
 
 	finishStepFraction :=
-		float64(c.model.GetFloat32(FinishPassReductionTag)) * 0.01 * stepOverFraction
-	enableFinish := c.model.GetBool(UseFinishPassTag)
+		float64(c.model.GetFloat32Value(FinishPassReductionTag)) * 0.01 * stepOverFraction
+	enableFinish := c.model.GetBoolValue(UseFinishPassTag)
 	carver.ConfigureFinishingPass(
 		enableFinish,
 		finishStepFraction,
-		carverFinishModeFromModelFinishMode(c.model.GetChoice(FinishPassModeTag)),
-		float64(c.model.GetFloat32(FinishPassHorizFeedRateTag)))
+		carverFinishModeFromModelFinishMode(c.model.GetIntValue(FinishPassModeTag)),
+		float64(c.model.GetFloat32Value(FinishPassHorizFeedRateTag)))
 
 	title := "Generating carving code"
 	progress := c.showProgressDialog(title, filepath.Base(c.model.fromFilePath))
@@ -316,7 +316,7 @@ func (c *Controller) getCarvingSampler(
 	topZ, bottomZ, toolDiameter float64) hmap.ScalarGridSampler {
 
 	imgGray := c.getHeightMapImageForSampler()
-	imgMode := c.model.GetChoice(CarvDirectionTag)
+	imgMode := c.model.GetIntValue(CarvDirectionTag)
 
 	xform := geom.NewXformCache(
 		float32(matDim.W), float32(matDim.H),
@@ -339,8 +339,8 @@ func (c *Controller) getCarvingSampler(
 // as needed.
 func (c *Controller) getHeightMapImageForSampler() *image.Gray {
 	heightMap := c.model.GetHeightMap()
-	mirrorX := c.model.GetBool(ImgMirrorXTag)
-	mirrorY := c.model.GetBool(ImgMirrorYTag)
+	mirrorX := c.model.GetBoolValue(ImgMirrorXTag)
+	mirrorY := c.model.GetBoolValue(ImgMirrorYTag)
 	if mirrorX && mirrorY {
 		heightMap = imaging.Rotate180(heightMap)
 	} else if mirrorX {

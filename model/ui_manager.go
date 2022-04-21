@@ -39,6 +39,17 @@ const (
 	FinishPassModeTag          = "finish_pass_mode"
 	FinishPassHorizFeedRateTag = "finish_pass_horiz_feed"
 
+	EnableContourTag         = "enable_contour_machining"
+	ContourToolTypeTag       = "contour_tool_type"
+	ContourToolDiameterTag   = "contour_tool_diameter"
+	ContourMaxStepDownTag    = "contour_max_step_down_size"
+	ContourHorizFeedRateTag  = "contour_horizontal_feed_rate"
+	ContourVertFeedRateTag   = "contour_vertical_feed_rate"
+	ContourCornerRadiusTag   = "contour_corner_radius"
+	ContourNubTabsPerSideTag = "contour_num_tabs_per_side"
+	ContourTabWidthTag       = "contour_tab_width"
+	ContourTabHeightTag      = "contour_tab_height"
+
 	ImgFillModeTag = "img_fill_mode"
 	ImgMirrorXTag  = "img_mirror_x"
 	ImgMirrorYTag  = "img_mirror_y"
