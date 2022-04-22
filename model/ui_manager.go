@@ -13,9 +13,10 @@ const (
 	NumberRegex       = `[ ]*([0-9]*\.?[0-9]*)`
 	SignedNumberRegex = `[ ]*(-?[0-9]*\.?[0-9]*)`
 
-	PanelMaterialTag  = "material"
-	PanelCarvingTag   = "carving"
-	PanelHeightMapTag = "height_map"
+	PanelMaterialTag    = "material_panel"
+	PanelCarvingTag     = "carving_panel"
+	PanelHeightMapTag   = "height_map_panel"
+	PanelContourMaching = "contour_panel"
 
 	MatWidthTag       = "mat_width"
 	MatHeightTag      = "mat_height"
@@ -69,6 +70,7 @@ var carvingDirectionChoices = []string{"Along X", "Along Y", "First along X then
 var finishPassModeChoices = []string{
 	"First direction only", "Last direction only", "All directions"}
 var imageFillModeChoices = []string{"Fill", "Fit", "Crop"}
+var numTabPerSideChoices = []string{"no tab", "1 tab", "2 tabs", "3 tabs", "4 tabs"}
 
 // Map image mode index from UI item to string mode used by Image Panel.
 var imgModeIndexToStrMode = []string{fui.ImgModeFill, fui.ImgModeFit, fui.ImgModeCrop}
@@ -79,7 +81,9 @@ var allUIItemTags = [...]string{
 	CarvWidthTag, CarvHeightTag, CarvOffsetXTag, CarvOffsetYTag, CarvBlackDepthTag, CarvWhiteDepthTag,
 	ToolDiamTag, StepOverTag, ToolTypeTag, MaxStepDownTag, HorizFeedRateTag, VertFeedRateTag,
 	CarvDirectionTag, UseFinishPassTag, FinishPassReductionTag, FinishPassModeTag,
-	FinishPassHorizFeedRateTag, ImgFillModeTag, ImgMirrorXTag, ImgMirrorYTag}
+	FinishPassHorizFeedRateTag, ImgFillModeTag, ImgMirrorXTag, ImgMirrorYTag, EnableContourTag, ContourToolTypeTag,
+	ContourToolDiameterTag, ContourMaxStepDownTag, ContourHorizFeedRateTag, ContourVertFeedRateTag,
+	ContourCornerRadiusTag, ContourNubTabsPerSideTag, ContourTabWidthTag, ContourTabHeightTag}
 
 type UIManager struct {
 	uiRoot *fui.MainLayout
@@ -176,6 +180,7 @@ func (ui *UIManager) buildControlPanel() {
 	ui.buildMaterialPanel()
 	ui.buildCarvingPanel()
 	ui.buildHeightMapPanel()
+	ui.buildContourMachiningPanel()
 	ui.uiRoot.GetControlPanel().Finalize()
 }
 
@@ -223,6 +228,22 @@ func (ui *UIManager) buildHeightMapPanel() {
 	cp.AddSelector(PanelHeightMapTag, ImgFillModeTag, "Image fill mode:", imageFillModeChoices)
 	cp.AddCheckbox(PanelHeightMapTag, ImgMirrorXTag, "Image mirror-X:")
 	cp.AddCheckbox(PanelHeightMapTag, ImgMirrorYTag, "Image mirror-Y:")
+}
+
+func (ui *UIManager) buildContourMachiningPanel() {
+	cp := ui.uiRoot.GetControlPanel()
+	cp.AddGroup(PanelContourMaching, "Contour Machining")
+
+	cp.AddCheckbox(PanelContourMaching, EnableContourTag, "Enable contour maching:")
+	cp.AddSelector(PanelContourMaching, ContourToolTypeTag, "Tool type:", toolTypeChoices)
+	cp.AddNumberEntry(PanelContourMaching, ContourToolDiameterTag, "Tool diameter (mm):", toolDiameterConfig())
+	cp.AddNumberEntry(PanelContourMaching, ContourMaxStepDownTag, "Max step down (mm)):", stepDownSizeConfig())
+	cp.AddNumberEntry(PanelContourMaching, ContourHorizFeedRateTag, "Horizontal feed rate (mm/min)):", feedRateConfig())
+	cp.AddNumberEntry(PanelContourMaching, ContourVertFeedRateTag, "Vertical feed rate (mm/min)):", feedRateConfig())
+	cp.AddNumberEntry(PanelContourMaching, ContourCornerRadiusTag, "Corner radius (mm)):", cornerRadiusConfig())
+	cp.AddSelector(PanelContourMaching, ContourNubTabsPerSideTag, "Number of tabs on each side:", numTabPerSideChoices)
+	cp.AddNumberEntry(PanelContourMaching, ContourTabWidthTag, "Width of tabs (mm)):", tabWidthConfig())
+	cp.AddNumberEntry(PanelContourMaching, ContourTabHeightTag, "Height of tabs (mm)):", tabHeightConfig())
 }
 
 func (ui *UIManager) buildMainMenu(w fyne.Window) {
@@ -409,6 +430,33 @@ func finishingPassConfig() fui.NumericalEditConfigConfig {
 	return fui.NumericalEditConfigConfig{
 		MinVal: 1.0,
 		MaxVal: 90.0,
+		Format: "%.1f",
+		Regex:  NumberRegex,
+	}
+}
+
+func cornerRadiusConfig() fui.NumericalEditConfigConfig {
+	return fui.NumericalEditConfigConfig{
+		MinVal: 0.0,
+		MaxVal: 20.0,
+		Format: "%.1f",
+		Regex:  NumberRegex,
+	}
+}
+
+func tabWidthConfig() fui.NumericalEditConfigConfig {
+	return fui.NumericalEditConfigConfig{
+		MinVal: 2.0,
+		MaxVal: 10.0,
+		Format: "%.1f",
+		Regex:  NumberRegex,
+	}
+}
+
+func tabHeightConfig() fui.NumericalEditConfigConfig {
+	return fui.NumericalEditConfigConfig{
+		MinVal: 0.2,
+		MaxVal: 2.0,
 		Format: "%.1f",
 		Regex:  NumberRegex,
 	}
