@@ -113,6 +113,17 @@ func NewModel() *Model {
 				FinishMode:                 FinishModeFirstDirectionOnly,
 				FinishHorizFeedRate:        750.0, // millimeters per minute,
 			},
+
+			Contour: contourMachining{
+				ToolDiameter:       3.175, // millimeters
+				MaxStepDownSize:    0.5,
+				HorizontalFeedRate: 500.0, // millimeters per minute
+				VerticalFeedRate:   300.0, // millimeters per minutes
+				CornerRadius:       5.0,   // millimeters
+				NumTabsPerSize:     2,
+				TabWidth:           4.0, // millimeters
+				TabHeight:          0.5, // millimeters
+			},
 		},
 	}
 }
