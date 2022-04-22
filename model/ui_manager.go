@@ -13,10 +13,10 @@ const (
 	NumberRegex       = `[ ]*([0-9]*\.?[0-9]*)`
 	SignedNumberRegex = `[ ]*(-?[0-9]*\.?[0-9]*)`
 
-	PanelMaterialTag    = "material_panel"
-	PanelCarvingTag     = "carving_panel"
-	PanelHeightMapTag   = "height_map_panel"
-	PanelContourMaching = "contour_panel"
+	PanelMaterialTag      = "material_panel"
+	PanelCarvingTag       = "carving_panel"
+	PanelHeightMapTag     = "height_map_panel"
+	PanelContourMachining = "contour_panel"
 
 	MatWidthTag       = "mat_width"
 	MatHeightTag      = "mat_height"
@@ -232,18 +232,18 @@ func (ui *UIManager) buildHeightMapPanel() {
 
 func (ui *UIManager) buildContourMachiningPanel() {
 	cp := ui.uiRoot.GetControlPanel()
-	cp.AddGroup(PanelContourMaching, "Contour Machining")
+	cp.AddGroup(PanelContourMachining, "Contour Machining")
 
-	cp.AddCheckbox(PanelContourMaching, EnableContourTag, "Enable contour maching:")
-	cp.AddSelector(PanelContourMaching, ContourToolTypeTag, "Tool type:", toolTypeChoices)
-	cp.AddNumberEntry(PanelContourMaching, ContourToolDiameterTag, "Tool diameter (mm):", toolDiameterConfig())
-	cp.AddNumberEntry(PanelContourMaching, ContourMaxStepDownTag, "Max step down (mm)):", stepDownSizeConfig())
-	cp.AddNumberEntry(PanelContourMaching, ContourHorizFeedRateTag, "Horizontal feed rate (mm/min)):", feedRateConfig())
-	cp.AddNumberEntry(PanelContourMaching, ContourVertFeedRateTag, "Vertical feed rate (mm/min)):", feedRateConfig())
-	cp.AddNumberEntry(PanelContourMaching, ContourCornerRadiusTag, "Corner radius (mm)):", cornerRadiusConfig())
-	cp.AddSelector(PanelContourMaching, ContourNubTabsPerSideTag, "Number of tabs on each side:", numTabPerSideChoices)
-	cp.AddNumberEntry(PanelContourMaching, ContourTabWidthTag, "Width of tabs (mm)):", tabWidthConfig())
-	cp.AddNumberEntry(PanelContourMaching, ContourTabHeightTag, "Height of tabs (mm)):", tabHeightConfig())
+	cp.AddCheckbox(PanelContourMachining, EnableContourTag, "Enable contour maching:")
+	cp.AddSelector(PanelContourMachining, ContourToolTypeTag, "Tool type:", toolTypeChoices)
+	cp.AddNumberEntry(PanelContourMachining, ContourToolDiameterTag, "Tool diameter (mm):", toolDiameterConfig())
+	cp.AddNumberEntry(PanelContourMachining, ContourMaxStepDownTag, "Max step down (mm)):", stepDownSizeConfig())
+	cp.AddNumberEntry(PanelContourMachining, ContourHorizFeedRateTag, "Horizontal feed rate (mm/min)):", feedRateConfig())
+	cp.AddNumberEntry(PanelContourMachining, ContourVertFeedRateTag, "Vertical feed rate (mm/min)):", feedRateConfig())
+	cp.AddNumberEntry(PanelContourMachining, ContourCornerRadiusTag, "Corner radius (mm)):", cornerRadiusConfig())
+	cp.AddSelector(PanelContourMachining, ContourNubTabsPerSideTag, "Number of tabs on each side:", numTabPerSideChoices)
+	cp.AddNumberEntry(PanelContourMachining, ContourTabWidthTag, "Width of tabs (mm)):", tabWidthConfig())
+	cp.AddNumberEntry(PanelContourMachining, ContourTabHeightTag, "Height of tabs (mm)):", tabHeightConfig())
 }
 
 func (ui *UIManager) buildMainMenu(w fyne.Window) {
