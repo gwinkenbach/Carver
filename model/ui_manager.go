@@ -75,19 +75,14 @@ var numTabPerSideChoices = []string{"no tab", "1 tab", "2 tabs", "3 tabs", "4 ta
 // Map image mode index from UI item to string mode used by Image Panel.
 var imgModeIndexToStrMode = []string{fui.ImgModeFill, fui.ImgModeFit, fui.ImgModeCrop}
 
-// A table with all the UI-item tags.
-var allUIItemTags = [...]string{
-	MatWidthTag, MatHeightTag, MatThicknessTag,
-	CarvWidthTag, CarvHeightTag, CarvOffsetXTag, CarvOffsetYTag, CarvBlackDepthTag, CarvWhiteDepthTag,
-	ToolDiamTag, StepOverTag, ToolTypeTag, MaxStepDownTag, HorizFeedRateTag, VertFeedRateTag,
-	CarvDirectionTag, UseFinishPassTag, FinishPassReductionTag, FinishPassModeTag,
-	FinishPassHorizFeedRateTag, ImgFillModeTag, ImgMirrorXTag, ImgMirrorYTag, EnableContourTag, ContourToolTypeTag,
-	ContourToolDiameterTag, ContourMaxStepDownTag, ContourHorizFeedRateTag, ContourVertFeedRateTag,
-	ContourCornerRadiusTag, ContourNubTabsPerSideTag, ContourTabWidthTag, ContourTabHeightTag}
-
 type UIManager struct {
 	uiRoot *fui.MainLayout
 	menu   *fui.MainMenu
+
+	allUIItemTags      []string
+	numEntryUIItemTags []string
+	selectorUIItemTags []string
+	checkboxUIItemTags []string
 
 	onUIChangeListener     func(uiItemTag string)
 	onMenuSelectedListener func(menuTag string)
@@ -97,7 +92,12 @@ type UIManager struct {
 }
 
 func NewUIManager() *UIManager {
-	return &UIManager{}
+	return &UIManager{
+		allUIItemTags:      make([]string, 0),
+		numEntryUIItemTags: make([]string, 0),
+		selectorUIItemTags: make([]string, 0),
+		checkboxUIItemTags: make([]string, 0),
+	}
 }
 
 func (ui *UIManager) BuildUI(w fyne.Window) {
@@ -131,7 +131,34 @@ func (ui *UIManager) SetMenuSelectedListener(l func(string)) {
 }
 
 func (ui *UIManager) GetAllUIItemTags() []string {
-	return allUIItemTags[:]
+	return ui.allUIItemTags
+}
+
+func (ui *UIManager) IsNumEntryUIItem(itemTag string) bool {
+	for _, tag := range ui.numEntryUIItemTags {
+		if tag == itemTag {
+			return true
+		}
+	}
+	return false
+}
+
+func (ui *UIManager) IsSelectorUIItem(itemTag string) bool {
+	for _, tag := range ui.selectorUIItemTags {
+		if tag == itemTag {
+			return true
+		}
+	}
+	return false
+}
+
+func (ui *UIManager) IsCheckboxUIItem(itemTag string) bool {
+	for _, tag := range ui.checkboxUIItemTags {
+		if tag == itemTag {
+			return true
+		}
+	}
+	return false
 }
 
 func (ui *UIManager) SetMenuItemEnabledState(menuTag string, enabled bool) {
@@ -189,16 +216,16 @@ func (ui *UIManager) buildMaterialPanel() {
 	cp.AddGroup(PanelMaterialTag, "Material")
 
 	cp.AddSeparator(PanelMaterialTag, "Material area:", true)
-	cp.AddNumberEntry(PanelMaterialTag, MatWidthTag, "Material width (mm):", materialDimensionsConfig())
-	cp.AddNumberEntry(PanelMaterialTag, MatHeightTag, "Material height (mm):", materialDimensionsConfig())
-	cp.AddNumberEntry(PanelMaterialTag, MatThicknessTag, "Material thickness (mm):", materialThicknessConfig())
+	ui.addNumberEntry(PanelMaterialTag, MatWidthTag, "Material width (mm):", materialDimensionsConfig())
+	ui.addNumberEntry(PanelMaterialTag, MatHeightTag, "Material height (mm):", materialDimensionsConfig())
+	ui.addNumberEntry(PanelMaterialTag, MatThicknessTag, "Material thickness (mm):", materialThicknessConfig())
 	cp.AddSeparator(PanelMaterialTag, "Carving area:", true)
-	cp.AddNumberEntry(PanelMaterialTag, CarvWidthTag, "Carving area width (mm):", materialDimensionsConfig())
-	cp.AddNumberEntry(PanelMaterialTag, CarvHeightTag, "Carving area height (mm):", materialDimensionsConfig())
-	cp.AddNumberEntry(PanelMaterialTag, CarvOffsetXTag, "Carving offset X (mm):", carvingOffsetConfig())
-	cp.AddNumberEntry(PanelMaterialTag, CarvOffsetYTag, "Carving offset Y (mm):", carvingOffsetConfig())
-	cp.AddNumberEntry(PanelMaterialTag, CarvBlackDepthTag, "Black carving depth (mm):", carvingDepthConfig())
-	cp.AddNumberEntry(PanelMaterialTag, CarvWhiteDepthTag, "White carving depth (mm):", carvingDepthConfig())
+	ui.addNumberEntry(PanelMaterialTag, CarvWidthTag, "Carving area width (mm):", materialDimensionsConfig())
+	ui.addNumberEntry(PanelMaterialTag, CarvHeightTag, "Carving area height (mm):", materialDimensionsConfig())
+	ui.addNumberEntry(PanelMaterialTag, CarvOffsetXTag, "Carving offset X (mm):", carvingOffsetConfig())
+	ui.addNumberEntry(PanelMaterialTag, CarvOffsetYTag, "Carving offset Y (mm):", carvingOffsetConfig())
+	ui.addNumberEntry(PanelMaterialTag, CarvBlackDepthTag, "Black carving depth (mm):", carvingDepthConfig())
+	ui.addNumberEntry(PanelMaterialTag, CarvWhiteDepthTag, "White carving depth (mm):", carvingDepthConfig())
 }
 
 func (ui *UIManager) buildCarvingPanel() {
@@ -206,44 +233,67 @@ func (ui *UIManager) buildCarvingPanel() {
 	cp.AddGroup(PanelCarvingTag, "Carving")
 
 	cp.AddSeparator(PanelCarvingTag, "Tool:", true)
-	cp.AddNumberEntry(PanelCarvingTag, ToolDiamTag, "Tool diameter (mm):", toolDiameterConfig())
-	cp.AddNumberEntry(PanelCarvingTag, StepOverTag, "Tool step over (%):", toolStepOverConfig())
-	cp.AddSelector(PanelCarvingTag, ToolTypeTag, "Tool type:", toolTypeChoices)
+	ui.addNumberEntry(PanelCarvingTag, ToolDiamTag, "Tool diameter (mm):", toolDiameterConfig())
+	ui.addNumberEntry(PanelCarvingTag, StepOverTag, "Tool step over (%):", toolStepOverConfig())
+	ui.addSelector(PanelCarvingTag, ToolTypeTag, "Tool type:", toolTypeChoices)
 	cp.AddSeparator(PanelCarvingTag, "Carving:", true)
-	cp.AddNumberEntry(PanelCarvingTag, MaxStepDownTag, "Max step down (mm)):", stepDownSizeConfig())
-	cp.AddNumberEntry(PanelCarvingTag, HorizFeedRateTag, "Horizontal feed rate (mm/min)):", feedRateConfig())
-	cp.AddNumberEntry(PanelCarvingTag, VertFeedRateTag, "Vertical feed rate (mm/min)):", feedRateConfig())
-	cp.AddSelector(PanelCarvingTag, CarvDirectionTag, "Carving mode:", carvingDirectionChoices)
+	ui.addNumberEntry(PanelCarvingTag, MaxStepDownTag, "Max step down (mm)):", stepDownSizeConfig())
+	ui.addNumberEntry(PanelCarvingTag, HorizFeedRateTag, "Horizontal feed rate (mm/min)):", feedRateConfig())
+	ui.addNumberEntry(PanelCarvingTag, VertFeedRateTag, "Vertical feed rate (mm/min)):", feedRateConfig())
+	ui.addSelector(PanelCarvingTag, CarvDirectionTag, "Carving mode:", carvingDirectionChoices)
 	cp.AddSeparator(PanelCarvingTag, "Optional finish pass:", true)
-	cp.AddCheckbox(PanelCarvingTag, UseFinishPassTag, "Enable finishing pass:")
-	cp.AddNumberEntry(PanelCarvingTag, FinishPassReductionTag, "Finishing step reduction (%):", finishingPassConfig())
-	cp.AddSelector(PanelCarvingTag, FinishPassModeTag, "Finish mode:", finishPassModeChoices)
-	cp.AddNumberEntry(PanelCarvingTag, FinishPassHorizFeedRateTag, "Finish pass horiz feed rate (mm/min)):", feedRateConfig())
+	ui.addCheckbox(PanelCarvingTag, UseFinishPassTag, "Enable finishing pass:")
+	ui.addNumberEntry(PanelCarvingTag, FinishPassReductionTag, "Finishing step reduction (%):", finishingPassConfig())
+	ui.addSelector(PanelCarvingTag, FinishPassModeTag, "Finish mode:", finishPassModeChoices)
+	ui.addNumberEntry(PanelCarvingTag, FinishPassHorizFeedRateTag, "Finish pass horiz feed rate (mm/min)):", feedRateConfig())
 }
 
 func (ui *UIManager) buildHeightMapPanel() {
 	cp := ui.uiRoot.GetControlPanel()
 	cp.AddGroup(PanelHeightMapTag, "Height Map")
 
-	cp.AddSelector(PanelHeightMapTag, ImgFillModeTag, "Image fill mode:", imageFillModeChoices)
-	cp.AddCheckbox(PanelHeightMapTag, ImgMirrorXTag, "Image mirror-X:")
-	cp.AddCheckbox(PanelHeightMapTag, ImgMirrorYTag, "Image mirror-Y:")
+	ui.addSelector(PanelHeightMapTag, ImgFillModeTag, "Image fill mode:", imageFillModeChoices)
+	ui.addCheckbox(PanelHeightMapTag, ImgMirrorXTag, "Image mirror-X:")
+	ui.addCheckbox(PanelHeightMapTag, ImgMirrorYTag, "Image mirror-Y:")
 }
 
 func (ui *UIManager) buildContourMachiningPanel() {
 	cp := ui.uiRoot.GetControlPanel()
 	cp.AddGroup(PanelContourMachining, "Contour Machining")
 
-	cp.AddCheckbox(PanelContourMachining, EnableContourTag, "Enable contour maching:")
-	cp.AddSelector(PanelContourMachining, ContourToolTypeTag, "Tool type:", toolTypeChoices)
-	cp.AddNumberEntry(PanelContourMachining, ContourToolDiameterTag, "Tool diameter (mm):", toolDiameterConfig())
-	cp.AddNumberEntry(PanelContourMachining, ContourMaxStepDownTag, "Max step down (mm)):", stepDownSizeConfig())
-	cp.AddNumberEntry(PanelContourMachining, ContourHorizFeedRateTag, "Horizontal feed rate (mm/min)):", feedRateConfig())
-	cp.AddNumberEntry(PanelContourMachining, ContourVertFeedRateTag, "Vertical feed rate (mm/min)):", feedRateConfig())
-	cp.AddNumberEntry(PanelContourMachining, ContourCornerRadiusTag, "Corner radius (mm)):", cornerRadiusConfig())
-	cp.AddSelector(PanelContourMachining, ContourNubTabsPerSideTag, "Number of tabs on each side:", numTabPerSideChoices)
-	cp.AddNumberEntry(PanelContourMachining, ContourTabWidthTag, "Width of tabs (mm)):", tabWidthConfig())
-	cp.AddNumberEntry(PanelContourMachining, ContourTabHeightTag, "Height of tabs (mm)):", tabHeightConfig())
+	ui.addCheckbox(PanelContourMachining, EnableContourTag, "Enable contour maching:")
+	ui.addSelector(PanelContourMachining, ContourToolTypeTag, "Tool type:", toolTypeChoices)
+	ui.addNumberEntry(PanelContourMachining, ContourToolDiameterTag, "Tool diameter (mm):", toolDiameterConfig())
+	ui.addNumberEntry(PanelContourMachining, ContourMaxStepDownTag, "Max step down (mm)):", stepDownSizeConfig())
+	ui.addNumberEntry(PanelContourMachining, ContourHorizFeedRateTag, "Horizontal feed rate (mm/min)):", feedRateConfig())
+	ui.addNumberEntry(PanelContourMachining, ContourVertFeedRateTag, "Vertical feed rate (mm/min)):", feedRateConfig())
+	ui.addNumberEntry(PanelContourMachining, ContourCornerRadiusTag, "Corner radius (mm)):", cornerRadiusConfig())
+	ui.addSelector(PanelContourMachining, ContourNubTabsPerSideTag, "Number of tabs on each side:", numTabPerSideChoices)
+	ui.addNumberEntry(PanelContourMachining, ContourTabWidthTag, "Width of tabs (mm)):", tabWidthConfig())
+	ui.addNumberEntry(PanelContourMachining, ContourTabHeightTag, "Height of tabs (mm)):", tabHeightConfig())
+}
+
+func (ui *UIManager) addNumberEntry(
+	panel string, uiItemTag string, label string, config fui.NumericalEditConfigConfig) {
+
+	cp := ui.uiRoot.GetControlPanel()
+	cp.AddNumberEntry(panel, uiItemTag, label, config)
+	ui.allUIItemTags = append(ui.allUIItemTags, uiItemTag)
+	ui.numEntryUIItemTags = append(ui.numEntryUIItemTags, uiItemTag)
+}
+
+func (ui *UIManager) addSelector(panel string, uiItemTag string, label string, choices []string) {
+	cp := ui.uiRoot.GetControlPanel()
+	cp.AddSelector(panel, uiItemTag, label, choices)
+	ui.allUIItemTags = append(ui.allUIItemTags, uiItemTag)
+	ui.selectorUIItemTags = append(ui.selectorUIItemTags, uiItemTag)
+}
+
+func (ui *UIManager) addCheckbox(panel string, uiItemTag string, label string) {
+	cp := ui.uiRoot.GetControlPanel()
+	cp.AddCheckbox(panel, uiItemTag, label)
+	ui.allUIItemTags = append(ui.allUIItemTags, uiItemTag)
+	ui.checkboxUIItemTags = append(ui.checkboxUIItemTags, uiItemTag)
 }
 
 func (ui *UIManager) buildMainMenu(w fyne.Window) {

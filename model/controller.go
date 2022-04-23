@@ -255,17 +255,12 @@ func (c *Controller) doOpenModel() {
 }
 
 func (c *Controller) doOnItemChanged(tag string) {
-	switch tag {
-	case MatWidthTag, MatHeightTag, MatThicknessTag, CarvWidthTag, CarvHeightTag, CarvOffsetXTag,
-		CarvOffsetYTag, CarvBlackDepthTag, CarvWhiteDepthTag, ToolDiamTag, StepOverTag, MaxStepDownTag,
-		HorizFeedRateTag, VertFeedRateTag, FinishPassReductionTag, FinishPassHorizFeedRateTag,
-		ContourCornerRadiusTag, ContourHorizFeedRateTag, ContourMaxStepDownTag, ContourTabHeightTag,
-		ContourTabWidthTag, ContourToolDiameterTag, ContourVertFeedRateTag:
+	switch {
+	case c.uiManager.IsNumEntryUIItem(tag):
 		SetModelValueByTag(c.model, tag, GetUiValueByTag[float32](c.uiManager, tag))
-	case ToolTypeTag, CarvDirectionTag, ImgFillModeTag, FinishPassModeTag, ContourToolTypeTag,
-		ContourNubTabsPerSideTag:
+	case c.uiManager.IsSelectorUIItem(tag):
 		SetModelValueByTag(c.model, tag, GetUiValueByTag[int](c.uiManager, tag))
-	case ImgMirrorXTag, ImgMirrorYTag, UseFinishPassTag, EnableContourTag:
+	case c.uiManager.IsCheckboxUIItem(tag):
 		SetModelValueByTag(c.model, tag, GetUiValueByTag[bool](c.uiManager, tag))
 	default:
 		log.Fatalf("Controller: doOnItemChanged - unknown tag = %s", tag)
@@ -277,17 +272,12 @@ func (c *Controller) doOnItemChanged(tag string) {
 }
 
 func (c *Controller) updateUIFromModel(tag string) {
-	switch tag {
-	case MatWidthTag, MatHeightTag, MatThicknessTag, CarvWidthTag, CarvHeightTag, CarvOffsetXTag,
-		CarvOffsetYTag, CarvBlackDepthTag, CarvWhiteDepthTag, ToolDiamTag, StepOverTag, MaxStepDownTag,
-		HorizFeedRateTag, VertFeedRateTag, FinishPassReductionTag, FinishPassHorizFeedRateTag,
-		ContourCornerRadiusTag, ContourHorizFeedRateTag, ContourMaxStepDownTag, ContourTabHeightTag,
-		ContourTabWidthTag, ContourToolDiameterTag, ContourVertFeedRateTag:
+	switch {
+	case c.uiManager.IsNumEntryUIItem(tag):
 		SetUiValueByTag(c.uiManager, tag, GetModelValueByTag[float32](c.model, tag))
-	case ToolTypeTag, CarvDirectionTag, ImgFillModeTag, FinishPassModeTag, ContourToolTypeTag,
-		ContourNubTabsPerSideTag:
+	case c.uiManager.IsSelectorUIItem(tag):
 		SetUiValueByTag(c.uiManager, tag, GetModelValueByTag[int](c.model, tag))
-	case ImgMirrorXTag, ImgMirrorYTag, UseFinishPassTag, EnableContourTag:
+	case c.uiManager.IsCheckboxUIItem(tag):
 		SetUiValueByTag(c.uiManager, tag, GetModelValueByTag[bool](c.model, tag))
 	default:
 		log.Fatalf("Controller: updateUIFromModel - unknown tag = %s", tag)
