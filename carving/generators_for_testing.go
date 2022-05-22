@@ -35,6 +35,14 @@ func (g *printTestGenerator) moveTo(x, y, depth float64) {
 	g.lastX, g.lastY = x, y
 }
 
+func (g *printTestGenerator) clockwiseArcTo(x, y, depth, radius float64) {
+	g.lastX, g.lastY = x, y
+}
+
+func (g *printTestGenerator) counterclockwiseArcTo(x, y, depth, radius float64) {
+	g.lastX, g.lastY = x, y
+}
+
 func (g *printTestGenerator) endPath(discard bool) {
 	fmt.Printf("end p=(%f, %f)\n", g.lastX, g.lastY)
 }
@@ -61,6 +69,10 @@ func (g *unitTestGenerator) changeHorizontalFeedRate(newFeedRateMmPerMin float64
 	return 400.0
 }
 
+func (g *unitTestGenerator) changeVerticalFeedRate(newFeedRateMmPerMin float64) float64 {
+	return 300.0
+}
+
 func (g *unitTestGenerator) startJob() {
 
 }
@@ -78,6 +90,22 @@ func (g *unitTestGenerator) startPath(x, y, depth float64) {
 }
 
 func (g *unitTestGenerator) moveTo(x, y, depth float64) {
+	if g.gotStart {
+		g.lastDepth = depth
+		g.lastPoint = geom.NewPt2(x, y)
+		g.numPoints++
+	}
+}
+
+func (g *unitTestGenerator) clockwiseArcTo(x, y, depth, radius float64) {
+	if g.gotStart {
+		g.lastDepth = depth
+		g.lastPoint = geom.NewPt2(x, y)
+		g.numPoints++
+	}
+}
+
+func (g *unitTestGenerator) counterclockwiseArcTo(x, y, depth, radius float64) {
 	if g.gotStart {
 		g.lastDepth = depth
 		g.lastPoint = geom.NewPt2(x, y)

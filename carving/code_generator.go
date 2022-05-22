@@ -15,6 +15,8 @@ type codeGenerator interface {
 
 	// Change the horizontal fee rate to <newFeedRateMmPerMin> and return the old feed rate.
 	changeHorizontalFeedRate(newFeedRateMmPerMin float64) float64
+	// Change the vertical fee rate to <newFeedRateMmPerMin> and return the old feed rate.
+	changeVerticalFeedRate(newFeedRateMmPerMin float64) float64
 
 	// Each carving path constitutes of a series of 3D linear segments. The starting point is
 	// set with startPath. The subsequent points along the path are set with moveTo. Finally,
@@ -22,5 +24,7 @@ type codeGenerator interface {
 	// should discard the entire path instead of emitting code for it.
 	startPath(x, y, depth float64)
 	moveTo(x, y, depth float64)
+	clockwiseArcTo(x, y, depth, radius float64)
+	counterclockwiseArcTo(x, y, depth, radius float64)
 	endPath(discard bool)
 }

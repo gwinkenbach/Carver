@@ -123,63 +123,52 @@ func (c *Controller) doRunCarver() {
 	if outFile == nil {
 		return
 	}
-
 	defer outFile.Close()
-	carver := carv.NewCarver(outFile)
 
-	// Test image conversion:
-	// gr := util.QtImageToGray16Image(c.model.GetHeightMap())
-	// util.WriteGray16ImageToPng(gr, "/Users/billy/test_gary.png")
-
-	materialDim := geom.NewSize2FromFloat32(
+	var mc carv.MachiningConfig
+	mc.Material.MaterialDim = geom.NewSize2FromFloat32(
 		c.model.GetFloat32Value(MatWidthTag), c.model.GetFloat32Value(MatHeightTag))
-	carvingOrigin := geom.NewPt2FromFloat32(
+	mc.Material.CarvingAreaOrigin = geom.NewPt2FromFloat32(
 		c.model.GetFloat32Value(CarvOffsetXTag), c.model.GetFloat32Value(CarvOffsetYTag))
-	carvingAreaDim := geom.NewSize2FromFloat32(
+	mc.Material.CarvingAreaDim = geom.NewSize2FromFloat32(
 		c.model.GetFloat32Value(CarvWidthTag), c.model.GetFloat32Value(CarvHeightTag))
-	materialTopZ := c.model.GetFloat32Value(MatThicknessTag)
-	carver.ConfigureMaterial(materialDim, carvingOrigin, carvingAreaDim, float64(materialTopZ))
+	mc.Material.MaterialThickness = float64(c.model.GetFloat32Value(MatThicknessTag))
 
-	toolType := carverToolTypeFromModelToolType(c.model.GetIntValue(ToolTypeTag))
-	toolDiameter := c.model.GetFloat32Value(ToolDiamTag)
-	horizFeedRate := c.model.GetFloat32Value(HorizFeedRateTag)
-	vertFeedRate := c.model.GetFloat32Value(VertFeedRateTag)
-	carver.ConfigureTool(
-		toolType, float64(toolDiameter), float64(horizFeedRate), float64(vertFeedRate))
+	mc.Carving.Tool.ToolType = carverToolTypeFromModelToolType(c.model.GetIntValue(ToolTypeTag))
+	mc.Carving.Tool.ToolDiameter = float64(c.model.GetFloat32Value(ToolDiamTag))
+	mc.Carving.Tool.HorizFeedRate = float64(c.model.GetFloat32Value(HorizFeedRateTag))
+	mc.Carving.Tool.VertFeedRate = float64(c.model.GetFloat32Value(VertFeedRateTag))
 
-	topZ := materialTopZ + c.model.GetFloat32Value(CarvWhiteDepthTag)
-	bottomZ := materialTopZ + c.model.GetFloat32Value(CarvBlackDepthTag)
 	stepOverFraction := float64(c.model.GetFloat32Value(StepOverTag)) * 0.01
-	stepOverFraction = math.Max(0.05, math.Min(1.0, stepOverFraction))
-	maxStepDown := c.model.GetFloat32Value(MaxStepDownTag)
-	carvingMode := carverModeFromModelCarvingMode(c.model.GetIntValue(CarvDirectionTag))
+	mc.Carving.StepOverFraction = math.Max(0.05, math.Min(1.0, stepOverFraction))
+	mc.Carving.Tool.MaxStepDown = float64(c.model.GetFloat32Value(MaxStepDownTag))
+	mc.Carving.CarvingMode = carverModeFromModelCarvingMode(c.model.GetIntValue(CarvDirectionTag))
 
+	topZ := mc.Material.MaterialThickness + float64(c.model.GetFloat32Value(CarvWhiteDepthTag))
+	bottomZ := mc.Material.MaterialThickness + float64(c.model.GetFloat32Value(CarvBlackDepthTag))
 	invertImage := false
 	if bottomZ > topZ {
 		invertImage = true
 		bottomZ, topZ = topZ, bottomZ
 	}
 
-	carver.ConfigureCarvingProfile(
-		c.getCarvingSampler(materialDim, carvingAreaDim, carvingOrigin, invertImage,
-			float64(topZ), float64(bottomZ), float64(toolDiameter)),
-		float64(topZ), float64(bottomZ),
-		stepOverFraction, float64(maxStepDown),
-		carvingMode)
+	mc.Carving.CarvingTopZ = topZ
+	mc.Carving.CarvingBottomZ = bottomZ
+	mc.Carving.Sampler = c.getCarvingSampler(mc.Material.MaterialDim, mc.Material.CarvingAreaDim,
+		mc.Material.CarvingAreaOrigin, invertImage, topZ, bottomZ,
+		float64(mc.Carving.Tool.ToolDiameter))
 
-	finishStepFraction :=
+	mc.Carving.FinishStepFraction =
 		float64(c.model.GetFloat32Value(FinishPassReductionTag)) * 0.01 * stepOverFraction
-	enableFinish := c.model.GetBoolValue(UseFinishPassTag)
-	carver.ConfigureFinishingPass(
-		enableFinish,
-		finishStepFraction,
-		carverFinishModeFromModelFinishMode(c.model.GetIntValue(FinishPassModeTag)),
-		float64(c.model.GetFloat32Value(FinishPassHorizFeedRateTag)))
+	mc.Carving.EnableFinishing = c.model.GetBoolValue(UseFinishPassTag)
+	mc.Carving.FinishMode =
+		carverFinishModeFromModelFinishMode(c.model.GetIntValue(FinishPassModeTag))
+	mc.Carving.FinishHorizFeedRate = float64(c.model.GetFloat32Value(FinishPassHorizFeedRateTag))
 
 	title := "Generating carving code"
 	progress := c.showProgressDialog(title, filepath.Base(c.model.fromFilePath))
 
-	carver.Run()
+	carv.DoMachining(&mc, outFile)
 
 	progress.Hide()
 }

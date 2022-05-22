@@ -121,14 +121,9 @@ func (c *Carver) ConfigureFinishingPass(
 
 // Run is called to generate the carving code. It is ok to (re)configure the carver and
 // call Run multiple times. However, all output go to the same writer.
-func (c *Carver) Run() {
-	gen := newGrblGenerator(c.horizFeedRate, c.vertFeedRate)
-	gen.configure(c.output, c.materialDimMm.W, c.materialDimMm.H, 0)
-
-	gen.startJob()
+func (c *Carver) Run(gen codeGenerator) {
 	c.carveAlongX(gen)
 	c.carveAlongY(gen)
-	gen.endJob()
 }
 
 // Generate carving runs along the x-direction. This will generate the main carving passes as
